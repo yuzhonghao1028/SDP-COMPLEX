@@ -27,7 +27,7 @@ dir.create("result/QC",recursive = T)
 for (i in 1:length(seurat.list)) {
   VlnPlot(seurat.list[[i]], features = c("nFeature_RNA", "nCount_RNA"), ncol = 2,pt.size = 0)
   ggsave(filename = paste0("result/QC/QC-VlnPlot_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
-  a<-seurat.list[[i]]@meta.data
+  a <- seurat.list[[i]]@meta.data
   ggplot(data = a,aes(x = a$nCount_RNA))+geom_density(fill="pink")+xlim(c(0,30000))
   ggsave(filename = paste0("result/QC/QC-nCount.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
   ggplot(data = a,aes(x = a$nFeature_RNA))+geom_density(fill="pink")+xlim(c(0,10000))
