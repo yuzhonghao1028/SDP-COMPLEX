@@ -97,12 +97,34 @@ dim.use <- 1:30
 
 # clustering
 seurat.obj.combined <- FindNeighbors(seurat.obj.combined, dims = dim.use,reduction = "pca")
-seurat.obj.combined <- FindClusters(seurat.obj.combined, resolution = 0.2)
+seurat.obj.combined <- FindClusters(seurat.obj.combined, resolution = 0.6)
 
 
 # UMAP reduction
 seurat.obj.combined <- RunUMAP(seurat.obj.combined, reduction = "pca", dims = dim.use)
 
+# RenameIdents
+seurat.obj.combined <- RenameIdents(seurat.obj.combined,
+                      "1"="Astrocyte",
+                      "2"="MP",
+                      "3"="Astrocyte",
+                      "4"="Astrocyte",
+                      "5"="Oligodendrocyte",
+                      "6"="Fibroblast",
+                      "7"="Astrocyte",
+                      "8"="Fibroblast",
+                      "9"="OPC",
+                      "10"="VEC",
+                      "11"="Fibroblast",
+                      "12"="Undefined",
+                      "13"="VEC",
+                      "14"="Vascular Mural Cell",
+                      "15"="Oligodendrocyte",
+                      "16"="MP",
+                      "17"="VEC",
+                      "18"="Oligodendrocyte",
+                      "19"="Astrocyte")
+seurat.obj.combined$celltype_undefined <- Idents(seurat.obj.combined)
 
 # save RDS file
 saveRDS(seurat.obj.combined,file = "result/SCT.CCA/goat.ON.snRNA_SCT.CCA.rds")
