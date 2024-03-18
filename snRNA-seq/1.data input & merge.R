@@ -125,6 +125,8 @@ seurat.obj.combined <- RenameIdents(seurat.obj.combined,
                       "18"="Oligodendrocyte",
                       "19"="Astrocyte")
 seurat.obj.combined$celltype_undefined <- Idents(seurat.obj.combined)
+Dimplot(seurat.obj.combined, group.by= "celltype_undefined")
+ggsave("result/SCT.CCA/data input & merge/undefined_subtype_dimplot_res0.1.pdf",width = 7,height = 5)
 
 # save RDS file
-saveRDS(seurat.obj.combined,file = "result/SCT.CCA/goat.ON.snRNA_SCT.CCA.rds")
+saveRDS(seurat.obj.combined,file = "result/SCT.CCA/data input & merge/goat.ON.snRNA_SCT.CCA.rds")
