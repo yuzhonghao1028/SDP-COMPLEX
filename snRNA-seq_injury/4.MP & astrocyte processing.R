@@ -26,6 +26,10 @@ extract.col<-function(picture){
 seurat.obj.combined <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/undefined verify/goat.ON.snRNA_SCT.CCA_undefined verify.rds")
 
 
+# create folder
+dir.create("snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing",recursive = T)
+
+
 # Isolation of monocular phagocytes populations
 MP <- subset(seurat.obj.combined, celltype=="MP")
 
