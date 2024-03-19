@@ -2,7 +2,10 @@
 library(Seurat)
 
 # load RDS data
-seurat.obj.combined <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/data input & merge/goat.ON.snRNA_SCT.CCA.rds")
+seurat.obj.combined <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/data input & merge/goat_ON injury snRNA_SCT.CCA.rds")
+
+# create folder
+dir.create("snRNA-seq_injury/results/SCT.CCA/undefined verify",recursive = T)
 
 # find undefined subclusters
 idents(seurat.obj.combined) <- "celltype_undefined"
@@ -39,4 +42,4 @@ seurat.obj.combined<-RenameIdents(seurat.obj.combined,
 seurat.obj.combined$celltype <- Idents(seurat.obj.combined)
 
 # save RDS file
-saveRDS(seurat.obj.combined, file = "snRNA-seq_injury/results/SCT.CCA/undefined verify/goat.ON.snRNA_SCT.CCA_undefined verify.rds")
+saveRDS(seurat.obj.combined, file = "snRNA-seq_injury/results/SCT.CCA/undefined verify/goat_ON injury snRNA_SCT.CCA undefined_verify.rds")
