@@ -82,11 +82,11 @@ seurat.obj.combined <- RunPCA(seurat.obj.combined, verbose = FALSE)
 
 
 # dir.create
-dir.create("snRNA-seq_injury/results/SCT.CCA")
+dir.create("snRNA-seq_injury/results/SCT.CCA/data input & merge", recursive = T)
 
 
 # ElbowPlot
-pdf(paste0("snRNA-seq_injury/results/SCT.CCA/PCA-ElbowPlot.pdf"),width = 6,height = 5)
+pdf(paste0("snRNA-seq_injury/results/SCT.CCA/data input & merge/PCA-ElbowPlot.pdf"),width = 6,height = 5)
 ElbowPlot(seurat.obj.combined,ndims = 50)
 dev.off()
 
@@ -723,4 +723,4 @@ Dimplot(seurat.obj.combined, group.by= "celltype_undefined")
 ggsave("snRNA-seq_injury/results/SCT.CCA/data input & merge/undefined_subtype_dimplot_res0.1.pdf",width = 7,height = 5)
 
 # save RDS file
-saveRDS(seurat.obj.combined,file = "snRNA-seq_injury/results/SCT.CCA/data input & merge/goat.ON.snRNA_SCT.CCA.rds")
+saveRDS(seurat.obj.combined,file = "snRNA-seq_injury/results/SCT.CCA/data input & merge/goat_ON injury snRNA_SCT.CCA.rds")
