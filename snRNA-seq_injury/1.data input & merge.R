@@ -4,10 +4,10 @@ library(future)
 library(dplyr)
 
 # snRNA-seq data input 
-control1 <- Read10X("2.1 Exp Matrix/1OD3/filtered_feature_bc_matrix/")
-control2 <- Read10X("2.1 Exp Matrix/3OD3/filtered_feature_bc_matrix/")
-injury1 <- Read10X("2.1 Exp Matrix/2OS3/filtered_feature_bc_matrix/")
-injury2 <- Read10X("2.1 Exp Matrix/3OS3/filtered_feature_bc_matrix/")
+control1 <- Read10X("snRNA-seq_injury/Matrix/1OD3/filtered_feature_bc_matrix/")
+control2 <- Read10X("snRNA-seq_injury/Matrix/3OD3/filtered_feature_bc_matrix/")
+injury1 <- Read10X("snRNA-seq_injury/Matrix/2OS3/filtered_feature_bc_matrix/")
+injury2 <- Read10X("snRNA-seq_injury/Matrix/3OS3/filtered_feature_bc_matrix/")
 seurat.list<-list(control1=control1,control2=control2,injury1=injury1,injury2=injury2)
 
 
@@ -22,16 +22,16 @@ for (i in 1:length(seurat.list)) {
 
 
 # quality control
-dir.create("results/QC",recursive = T)
+dir.create("snRNA-seq_injury/results/QC",recursive = T)
 ## QC
 for (i in 1:length(seurat.list)) {
   VlnPlot(seurat.list[[i]], features = c("nFeature_RNA", "nCount_RNA"), ncol = 2,pt.size = 0)
-  ggsave(filename = paste0("results/QC/QC-VlnPlot_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
+  ggsave(filename = paste0("snRNA-seq_injury/results/QC/QC-VlnPlot_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
   a <- seurat.list[[i]]@meta.data
   ggplot(data = a,aes(x = a$nCount_RNA))+geom_density(fill="pink")+xlim(c(0,30000))
-  ggsave(filename = paste0("results/QC/QC-nCount.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
+  ggsave(filename = paste0("snRNA-seq_injury/results/QC/QC-nCount.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
   ggplot(data = a,aes(x = a$nFeature_RNA))+geom_density(fill="pink")+xlim(c(0,10000))
-  ggsave(filename = paste0("results/QC/QC-nFeature.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
+  ggsave(filename = paste0("snRNA-seq_injury/results/QC/QC-nFeature.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
 }
 
 
@@ -82,11 +82,11 @@ seurat.obj.combined <- RunPCA(seurat.obj.combined, verbose = FALSE)
 
 
 # dir.create
-dir.create("results/SCT.CCA")
+dir.create("snRNA-seq_injury/results/SCT.CCA")
 
 
 # ElbowPlot
-pdf(paste0("results/SCT.CCA/PCA-ElbowPlot.pdf"),width = 6,height = 5)
+pdf(paste0("snRNA-seq_injury/results/SCT.CCA/PCA-ElbowPlot.pdf"),width = 6,height = 5)
 ElbowPlot(seurat.obj.combined,ndims = 50)
 dev.off()
 
@@ -720,7 +720,7 @@ seurat.obj.combined <- subset(seurat.obj.combined=c("AATCGTGTCTGTCAGA-1_2",
                             "CCGGGTATCTACACAG-1_2"),invert=T)
 # dimplot
 Dimplot(seurat.obj.combined, group.by= "celltype_undefined")
-ggsave("results/SCT.CCA/data input & merge/undefined_subtype_dimplot_res0.1.pdf",width = 7,height = 5)
+ggsave("snRNA-seq_injury/results/SCT.CCA/data input & merge/undefined_subtype_dimplot_res0.1.pdf",width = 7,height = 5)
 
 # save RDS file
-saveRDS(seurat.obj.combined,file = "results/SCT.CCA/data input & merge/goat.ON.snRNA_SCT.CCA.rds")
+saveRDS(seurat.obj.combined,file = "snRNA-seq_injury/results/SCT.CCA/data input & merge/goat.ON.snRNA_SCT.CCA.rds")
