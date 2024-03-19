@@ -75,4 +75,4 @@ dim.use <- 1:30
 seurat.obj.combined <- RunUMAP(seurat.obj.combined, reduction = "pca", dims = dim.use)
 
 # save RDS file
-saveRDS(seurat.list.combined,file = "snRNA-seq_injury/results/SCT.CCA/data input & merge/goat_ON decoupling snRNA_SCT.CCA.rds")
+saveRDS(seurat.list.combined,file = "snRNA-seq_dec/results/SCT.CCA/data input & merge/goat_ON decoupling snRNA_SCT.CCA.rds")
