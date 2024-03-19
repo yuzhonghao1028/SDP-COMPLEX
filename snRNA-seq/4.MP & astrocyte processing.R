@@ -10,6 +10,7 @@ library(edgeR)
 library(zinbwave)
 library(scran)
 
+
 # extract seurat color function
 extract.col<-function(picture){
   p1 <- picture 
@@ -20,14 +21,17 @@ extract.col<-function(picture){
   rm(p1,x,info)
 }
 
+
 # load RDS data
 seurat.obj.combined <- readRDS(file = "results/SCT.CCA/undefined verify/goat.ON.snRNA_SCT.CCA_undefined verify.rds")
+
 
 # Isolation of monocular phagocytes populations
 MP <- subset(seurat.obj.combined, celltype=="MP")
 
+
 # heatmap of top20 blood-derived monocytes and skull derived monocytes signatures
-# top 20 upregulated DEGs for blood-derived monocytes and skull derived monocytes from Andrea Cugurra's study
+## top 20 upregulated DEGs for blood-derived monocytes and skull derived monocytes from Andrea Cugurra's study
 skull.genes <- c("PIM1",
                  "MFGE8",
                  "LARS2",
@@ -76,6 +80,7 @@ Heatmap((hm_average_selective), row_names_gp = gpar(fontsize = 6), col = brewer.
         cluster_rows = F,cluster_columns = F,name = "Scaled Exp.",column_names_gp = gpar(fontsize = 10))
 dev.off()
 
+
 # AUCell scoring
 exprMatrix <- GetAssayData(MP, slot='counts')
 cells_rankings <- AUCell_buildRankings(exprMatrix, nCores=2, plotStats=TRUE)
@@ -92,6 +97,7 @@ FeaturePlot(MP,features = "AUCell_skull_derived_score",split.by = "group",order 
 ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/AUCell_Skull_derived_score_top20.pdf",width = 7.4,height = 2.8)
 FeaturePlot(MP,features = "AUCell_blood_derived_score",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/AUCell_blood_derived_score_top20.pdf",width = 7.4,height = 2.8)
+
 
 # AddModuleScore for MP
 ## DAM score
@@ -173,7 +179,7 @@ MP <- AddModuleScore(MP,features = list(c("GPNMB",
                                                           "COLEC12")),name = "Myelin_DAM_score")
 FeaturePlot(MP,features = "Myelin_DAM_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/Myelin_DAM_score featureplot.pdf",width = 6.8,height = 2.5)
-# calculate positive rate
+## calculate positive rate
 p1 <- FeaturePlot(MP,features = "Myelin_DAM_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 data <- as.data.frame(as.matrix(p1[[1]]$data))
 data[,4] <- as.numeric(data[,4])
@@ -257,7 +263,6 @@ data <- as.data.frame(as.matrix(p1[[2]]$data))
 data[,4] <- as.numeric(data[,4])
 table(data[,4]>5)
 
-
 ## IFN score
 MP <- AddModuleScore(MP,features =list(c("LOC102180655",
                                                          "IFIT3",
@@ -294,6 +299,19 @@ data <- as.data.frame(as.matrix(p1[[2]]$data))
 data[,4] <- as.numeric(data[,4])
 table(data[,4]>5)
 
+## Inflammatory response score
+GOID <- c("GO:0006954")
+GOgeneID <- get(GOID, org.Hs.egGO2ALLEGS) %>% mget(org.Hs.egSYMBOL) %>% unlist()
+MP <- AddModuleScore(MP,features =list(GOgeneID),name = "Inflammatory_response_score",assay = "RNA")
+FeaturePlot(MP,features = "Inflammatory_response_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
+ggsave("results/SCT.CCA/MP & astrocyte processing/inflammatory_response_score splitby group featureplot.pdf",height = 3,width = 8)
+Idents(MP) <- "group"
+VlnPlot(MP,features = "Inflammatory_response_score1",pt.size = 0,cols = c(seurat.cols[2],seurat.cols[1]))+xlab("")+
+  geom_boxplot(width=.2,col="black",fill="white")+  
+  NoLegend()
+ggsave("results/SCT.CCA/MP & astrocyte processing/inflammatory_response_score splitby group vlnplot with box.pdf",height = 3.5,width = 2.5)
+
+
 # blood derived score vs. skull derived score vlnplot
 data <- read.csv("fresults/SCT.CCA/MP & astrocyte processing/EAE skull & blood score split by group.csv")
 ggplot(data, aes(x=group, y=score, fill=source)) +
@@ -309,12 +327,14 @@ ggplot(data, aes(x=group, y=score, fill=source)) +
   theme(text = element_text(size = 15))+NoLegend()
 ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/AUCell_EAE_blood&skull derived score splitby_group vlnplot.pdf",width = 4,height = 4)  
 
+
 # MP subcluster
 MP <- FindClusters(MP, resolution = 0.2, algorithm = 4, method = "igraph", graph.name = "reresolution",random.seed = 123)
 DimPlot(MP,group.by = "reresolution_res.0.2",split.by= "group)
 ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/MP subcluster res_0.2 splitby_group dimplot.pdf",width = 10.5,height = 5)  
 # extract seurat colors
 extract.col(Dimplot(MP,group.by="reresolution_res.0.2"))
+
 
 # MP subcluster propotion stack barplot
 data <- as.data.frame(table(MP$reresolution_res.0.2,MP$group))
@@ -350,6 +370,7 @@ ggplot(data, aes( x = Var2, y=percentage,fill = Var1))+
   geom_text(aes(label=label),size=4,color="black",position = "stack")
 ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/subcluster propotion stack barplot.pdf",width = 5,height = 6)
 
+
 # MP subcluster addmodelescore
 ## microglia score vlnplot
 MP <- AddModuleScore(MP,features = list(c("P2RY12","TMEM119","HEXB","SALL1")),name = "microglia_score")
@@ -360,6 +381,7 @@ ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/microglia_score spl
 VlnPlot(MP,features = "EAE_Skull_derived_score1",pt.size = 0,split.by = "reresolution_res.0.2",group.by = "reresolution_res.0.2",cols = seurat.cols)+
   geom_boxplot(width=0.2,position=position_dodge(0.9),fill="white")+NoLegend()+labs(y = "Expression Level")
 ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/EAE_Skull_derived_score splitby_group vlnplot.pdf",height = 3.3,width = 3)
+
 
 # MP DEGs analysis (ZINBWAVE method)
 ## renamed cluster
@@ -599,6 +621,7 @@ genes.sig.lfc <- subset(genes.sig, genes.sig$logFC >= 0.25 | genes.sig$logFC <= 
 ## Save dataframe as csv file
 openxlsx::write.xlsx(genes.sig.lfc, file='results/SCT.CCA/MP & astrocyte processing/zinb_sig_genes MP_subcluster5 0.25lfc.xlsx') 
 
+
 # MP subcluster volcano plot
 ## subcluster1
 data<-read.xlsx("results/SCT.CCA/MP & astrocyte processing/zinb_sig_genes MP_subcluster1 0.25lfc.xlsx")
@@ -704,19 +727,125 @@ ggplot(data = data,aes(x = logFC,y = -log10(Pval))) +
         panel.grid.major = element_blank()) 
 ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/MP subcluster2 DEGs volcano in injury vs control.pdf",height = 3,width = 4)
 
+
 # enrichment barplot
-## 
+## subcluster 1
+data<-read.csv("cluster1 gobp.csv")
+font.size =12
+data %>% 
+  ggplot(aes(x=forcats::fct_reorder(Term,P.value,.desc = T),y=-log10(P.value)))+ 
+  geom_bar(stat="identity",width = 0.7)+
+  coord_flip()+
+  labs(x=NULL) +
+  ggtitle("")+
+  theme_classic() +
+  theme(axis.text.x = element_text(colour = "black",
+                                   size = font.size, vjust =1 ),
+        axis.text.y = element_text(colour = "black",
+                                   size = font.size, hjust =1 ),
+        axis.title = element_text(margin=margin(10, 5, 0, 0),
+                                  color = "black",size = font.size),
+        axis.title.y = element_text(angle=90))+
+  geom_col(fill="orange",width = 0.7)
+ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/MP subcluster1 DEGs GO BP barplot in injury vs control.pdf",width = 6.3,height = 2.4)
+
+## subcluster 1
+data<-read.csv("cluster2 gobp.csv")
+font.size =12
+data %>% 
+  ggplot(aes(x=forcats::fct_reorder(Term,P.value,.desc = T),y=-log10(P.value)))+ 
+  geom_bar(stat="identity",width = 0.7)+
+  coord_flip()+
+  labs(x=NULL) +
+  ggtitle("")+
+  theme_classic() +
+  theme(axis.text.x = element_text(colour = "black",
+                                   size = font.size, vjust =1 ),
+        axis.text.y = element_text(colour = "black",
+                                   size = font.size, hjust =1 ),
+        axis.title = element_text(margin=margin(10, 5, 0, 0),
+                                  color = "black",size = font.size),
+        axis.title.y = element_text(angle=90))+
+  geom_col(fill="orange",width = 0.7)
+ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/MP subcluster1 DEGs GO BP barplot in injury vs control.pdf",width = 8.0,height = 2.4)
+
+        
+# chemokine pairs daotplot
+## ligand
+DotPlot(seurat.obj.combined.injury,features = c("CXCL12",
+                                             "CX3CL1",
+                                             "LOC102182115",
+                                             "LOC102174969",
+                                             "LOC102180880",
+                                             "LOC102175889",
+                                             "CCL5",
+                                             "LOC102175436"),cols = c("grey", "#ff70b5"))+RotatedAxis()+coord_flip()
+ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/ligand dotplot_only.injury.pdf",width = 5.5,height = 5.5)
+        
+## receptor
+DotPlot(seurat.obj.combined.injury,features = c("CXCR4",
+                                             "CX3CR1",
+                                             "CXCR2",
+                                             "LOC102179993",
+                                             "LOC102178953",
+                                             "CCR5"),cols = c("grey", "#ff70b5"))+RotatedAxis()+coord_flip()
+ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/receptor dotplot_only.injury.pdf",width = 5.5,height = 5.5)
 
 
+# MP cell cycle score vlnplot
+VlnPlot(MP,features = "S.Score",pt.size = 0)+ labs(y = "Expression Level")+NoLegend()
+ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/vlnplot s.score for subcluster.pdf",height = 3,width = 3.5)
 
+VlnPlot(MP,features = "G2M.Score",pt.size = 0)+ labs(y = "Expression Level")+NoLegend()
+ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/vlnplot G2M.score for subcluster.pdf",height = 3,width = 3.2)
 
+VlnPlot(MP,features = "MKI67",pt.size = 0)+ labs(y = "Expression Level")+NoLegend()
+ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/vlnplot MKI67 for subcluster.pdf",height = 3,width = 3.2)
 
+        
+# Astrocyte
+## Isolation of monocular phagocytes populations
+astro <- subset(seurat.obj.combined, celltype=="Astrocyte")
+        
+## A1 score
+astro<-AddModuleScore(astro,features =list(c("SERPING1",	"LIG1",	"LOC102170144",	"FBLN5",	
+                                                         "FBLN1",	"LOC102190288",	"FKBP5",	"PSMB8",	
+                                                         "SRGN",	"AMIGO2")),name = "A1_score" )
+FeaturePlot(astro,features = "A1_score1",split.by = "group",order = T,cols= pal)& theme(legend.position = "right")
+ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/A1_score.pdf",width = 6.8,height = 2.5)
+## calculate positive rate
+p1 <- FeaturePlot(astro,features = "A1_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
+data <- as.data.frame(as.matrix(p1[[1]]$data))
+data[,4] <- as.numeric(data[,4])
+table(data[,4]>5)
+data <- as.data.frame(as.matrix(p1[[2]]$data))
+data[,4] <- as.numeric(data[,4])
+table(data[,4]>5)
 
+## A2 score
+astro<-AddModuleScore(astro,features =list(c("CLCF1",	"TGM1",	"PTX3",	"S100A10",	"SPHK1",	"CD109",
+                                             "PTGS2",	"EMP1",	"SLC10A6",	"TM4SF1",	"B3GNT5",	"CD14")),name = "A2_score" )
+FeaturePlot(astro,features = "A2_score1",split.by = "group",order = T,cols= pal)& theme(legend.position = "right")
+ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/A2_score.pdf",width = 6.8,height = 2.5)
+## calculate positive rate
+p1 <- FeaturePlot(astro,features = "A2_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
+data <- as.data.frame(as.matrix(p1[[1]]$data))
+data[,4] <- as.numeric(data[,4])
+table(data[,4]>5)
+data <- as.data.frame(as.matrix(p1[[2]]$data))
+data[,4] <- as.numeric(data[,4])
+table(data[,4]>5)
 
-
-
-
-
+# A1 & A2 heatmap
+extract.col(DimPlot(astro,group.by = "group"))
+DoHeatmap(astro,features =c("SERPING1",	"LIG1",	"LOC102170144",	"FBLN5",	"FBLN1",
+                            "LOC102190288",	"FKBP5",	"PSMB8",	"SRGN",	"AMIGO2",
+                            "CLCF1",	"TGM1",	"PTX3",	"S100A10",	"SPHK1",	"CD109",
+                            "PTGS2",	"EMP1",	"SLC10A6",	"TM4SF1",	"B3GNT5",	"CD14"),
+          label = F,group.by = "group" ,assay = "RNA",slot = "scale.data",size = 2,
+          group.colors = c(seurat.cols[2],seurat.cols[1]))+
+        scale_fill_gradientn(colors = c("lightskyblue","white","firebrick3"))
+ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/astro.A1&A2 gene heatmap.png",height = 5,width = 3.5)
 
 
 
