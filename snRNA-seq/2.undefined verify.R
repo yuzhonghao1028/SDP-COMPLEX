@@ -2,24 +2,24 @@
 library(Seurat)
 
 # load RDS data
-seurat.obj.combined <- readRDS(file = "result/SCT.CCA/data input & merge/goat.ON.snRNA_SCT.CCA.rds")
+seurat.obj.combined <- readRDS(file = "results/SCT.CCA/data input & merge/goat.ON.snRNA_SCT.CCA.rds")
 
 # find undefined subclusters
 idents(seurat.obj.combined) <- "celltype_undefined"
 seurat.obj.combined <- FindNeighbors(seurat.obj.combined,graph.name = "leiden")
 seurat.obj.combined <- FindSubCluster(object = seurat.obj.combined,cluster = "Undefined",subcluster.name = "undefined_subtype",graph.name = "leiden",resolution = 0.1,algorithm = 4)
 Dimplot(seurat.obj.combined, group.by= "undefined_subtype")
-ggsave("result/SCT.CCA/undefined verify/undefined_subtype_dimplot_res0.1.pdf",width = 7,height = 5)
+ggsave("results/SCT.CCA/undefined verify/undefined_subtype_dimplot_res0.1.pdf",width = 7,height = 5)
 
 # cell cycle scoring
 seurat.obj.combined <- CellCycleScoring(seurat.obj.combined,s.features = cc.genes$s.genes,g2m.features = cc.genes$g2m.genes)
 VlnPlot(seurat.obj.combined,features = c("S.Score","G2M.Score"),group.by = "undefined_subtype")&xlab("")
-ggsave(filename = "result/SCT.CCA/undefined verify/all.celltype_undefined_split_cc.score.pdf",width = 10,height = 5)
+ggsave(filename = "results/SCT.CCA/undefined verify/all.celltype_undefined_split_cc.score.pdf",width = 10,height = 5)
 
 # dotplot
 undefined <- subset(seurat.obj.combined,celltype_undefined=="undefined")
 DotPlot(undefined,features = c("GFAP","P2RY12","COL3A1","PCDH15"))+RotatedAxis()+xlab("")+ylab("")
-ggsave(filename = "result/SCT.CCA/undefined verify/signature gene dotplot.pdf",width = 5.5,height = 3.5)
+ggsave(filename = "results/SCT.CCA/undefined verify/signature gene dotplot.pdf",width = 5.5,height = 3.5)
 
 # undefined cluster renameidents
 Idents(seurat.obj.combined) <- "undefined_subtype"
@@ -39,4 +39,4 @@ seurat.obj.combined<-RenameIdents(seurat.obj.combined,
 seurat.obj.combined$celltype <- Idents(seurat.obj.combined)
 
 # save RDS file
-saveRDS(seurat.obj.combined, file = "result/SCT.CCA/undefined verify/goat.ON.snRNA_SCT.CCA_undefined verify.rds")
+saveRDS(seurat.obj.combined, file = "results/SCT.CCA/undefined verify/goat.ON.snRNA_SCT.CCA_undefined verify.rds")
