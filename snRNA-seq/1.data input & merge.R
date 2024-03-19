@@ -22,16 +22,16 @@ for (i in 1:length(seurat.list)) {
 
 
 # quality control
-dir.create("result/QC",recursive = T)
+dir.create("results/QC",recursive = T)
 ## QC
 for (i in 1:length(seurat.list)) {
   VlnPlot(seurat.list[[i]], features = c("nFeature_RNA", "nCount_RNA"), ncol = 2,pt.size = 0)
-  ggsave(filename = paste0("result/QC/QC-VlnPlot_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
+  ggsave(filename = paste0("results/QC/QC-VlnPlot_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
   a <- seurat.list[[i]]@meta.data
   ggplot(data = a,aes(x = a$nCount_RNA))+geom_density(fill="pink")+xlim(c(0,30000))
-  ggsave(filename = paste0("result/QC/QC-nCount.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
+  ggsave(filename = paste0("results/QC/QC-nCount.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
   ggplot(data = a,aes(x = a$nFeature_RNA))+geom_density(fill="pink")+xlim(c(0,10000))
-  ggsave(filename = paste0("result/QC/QC-nFeature.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
+  ggsave(filename = paste0("results/QC/QC-nFeature.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
 }
 
 
@@ -82,11 +82,11 @@ seurat.obj.combined <- RunPCA(seurat.obj.combined, verbose = FALSE)
 
 
 # dir.create
-dir.create("result/SCT.CCA")
+dir.create("results/SCT.CCA")
 
 
 # ElbowPlot
-pdf(paste0("result/SCT.CCA/PCA-ElbowPlot.pdf"),width = 6,height = 5)
+pdf(paste0("results/SCT.CCA/PCA-ElbowPlot.pdf"),width = 6,height = 5)
 ElbowPlot(seurat.obj.combined,ndims = 50)
 dev.off()
 
@@ -720,7 +720,7 @@ seurat.obj.combined <- subset(seurat.obj.combined=c("AATCGTGTCTGTCAGA-1_2",
                             "CCGGGTATCTACACAG-1_2"),invert=T)
 # dimplot
 Dimplot(seurat.obj.combined, group.by= "celltype_undefined")
-ggsave("result/SCT.CCA/data input & merge/undefined_subtype_dimplot_res0.1.pdf",width = 7,height = 5)
+ggsave("results/SCT.CCA/data input & merge/undefined_subtype_dimplot_res0.1.pdf",width = 7,height = 5)
 
 # save RDS file
-saveRDS(seurat.obj.combined,file = "result/SCT.CCA/data input & merge/goat.ON.snRNA_SCT.CCA.rds")
+saveRDS(seurat.obj.combined,file = "results/SCT.CCA/data input & merge/goat.ON.snRNA_SCT.CCA.rds")
