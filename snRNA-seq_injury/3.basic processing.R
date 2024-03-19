@@ -4,7 +4,9 @@ library(ggplot2)
 library(reshape2)
 
 # load RDS data
-seurat.obj.combined <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/undefined verify/goat.ON.snRNA_SCT.CCA_undefined verify.rds")
+seurat.obj.combined <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/undefined verify/goat_ON injury snRNA_SCT.CCA undefined_verify.rds")
+
+
 
 # dimplot for celltype
 seurat.col <- pal_locuszoom("default", alpha = 1)(7)
