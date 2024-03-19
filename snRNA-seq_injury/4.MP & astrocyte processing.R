@@ -23,7 +23,7 @@ extract.col<-function(picture){
 
 
 # load RDS data
-seurat.obj.combined <- readRDS(file = "results/SCT.CCA/undefined verify/goat.ON.snRNA_SCT.CCA_undefined verify.rds")
+seurat.obj.combined <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/undefined verify/goat.ON.snRNA_SCT.CCA_undefined verify.rds")
 
 
 # Isolation of monocular phagocytes populations
@@ -75,7 +75,7 @@ hm_average_selective$row_names <- row.names(hm_average_selective)
 hm_average_selective <- hm_average_selective[order(match(hm_average_selective$row_names, selected.genes)), ]
 hm_average_selective$row_names <- NULL
 colnames(hm_average_selective)<-c("Ctrl.","Inj.")
-pdf(file = "results/SCT.CCA/MP & astrocyte processing/EAE_Skull&blood gene heatmap.pdf",width = 1.9,height = 3)
+pdf(file = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/EAE_Skull&blood gene heatmap.pdf",width = 1.9,height = 3)
 Heatmap((hm_average_selective), row_names_gp = gpar(fontsize = 6), col = brewer.pal(9,name = "Purples"),
         cluster_rows = F,cluster_columns = F,name = "Scaled Exp.",column_names_gp = gpar(fontsize = 10))
 dev.off()
@@ -94,9 +94,9 @@ data <- t(cells_AUC@assays@data$AUC)
 MP <- AddMetaData(MP, metadata=data, col.name="AUCell_blood_derived_score")
 ## featureplot
 FeaturePlot(MP,features = "AUCell_skull_derived_score",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/AUCell_Skull_derived_score_top20.pdf",width = 7.4,height = 2.8)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/AUCell_Skull_derived_score_top20.pdf",width = 7.4,height = 2.8)
 FeaturePlot(MP,features = "AUCell_blood_derived_score",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/AUCell_blood_derived_score_top20.pdf",width = 7.4,height = 2.8)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/AUCell_blood_derived_score_top20.pdf",width = 7.4,height = 2.8)
 
 
 # AddModuleScore for MP
@@ -120,7 +120,7 @@ MP <- AddModuleScore(MP,features =list(c("CD9",
                                                          "IRF8",
                                                          "FTH1")),name = "DAM_score" )
 FeaturePlot(MP,features = "DAM_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/DAM.score featureplot.pdf",width = 6.8,height = 2.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/DAM.score featureplot.pdf",width = 6.8,height = 2.5)
 ## calculate positive rate
 p1 <- FeaturePlot(MP,features = "DAM_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 data <- as.data.frame(as.matrix(p1[[1]]$data))
@@ -148,7 +148,7 @@ MP <- AddModuleScore(MP,features = list(c("MYO1E",
                                                           "PRKG1",
                                                           "CSF1")),name = "Amyloid_DAM_score")
 FeaturePlot(MP,features = "Amyloid_DAM_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/Amyloid_DAM_score featureplot.pdf",width = 6.8,height = 2.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/Amyloid_DAM_score featureplot.pdf",width = 6.8,height = 2.5)
 ## calculate positive rate
 p1 <- FeaturePlot(MP,features = "Amyloid_DAM_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 data <- as.data.frame(as.matrix(p1[[1]]$data))
@@ -178,7 +178,7 @@ MP <- AddModuleScore(MP,features = list(c("GPNMB",
                                                           "CSF2RA",
                                                           "COLEC12")),name = "Myelin_DAM_score")
 FeaturePlot(MP,features = "Myelin_DAM_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/Myelin_DAM_score featureplot.pdf",width = 6.8,height = 2.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/Myelin_DAM_score featureplot.pdf",width = 6.8,height = 2.5)
 ## calculate positive rate
 p1 <- FeaturePlot(MP,features = "Myelin_DAM_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 data <- as.data.frame(as.matrix(p1[[1]]$data))
@@ -219,7 +219,7 @@ DoHeatmap(MP,features =c("MYO1E",
                                   "TRPC4",
                                   "LILRB4A",
                                   "MARCH3") ,label = F,slot = "scale.data",group.colors =c(seurat.cols[2],seurat.cols[1]) )+scale_fill_gradientn(colors = c("lightskyblue","white","firebrick3"))
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/amyloid_myelin_dam_score_top10 gene heatmap.png",height = 3.5,width = 3)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/amyloid_myelin_dam_score_top10 gene heatmap.png",height = 3.5,width = 3)
 
 ## homeostatic score
 MP <- AddModuleScore(MP,features = list(c("SELPLG",
@@ -238,7 +238,7 @@ MP <- AddModuleScore(MP,features = list(c("SELPLG",
                                                         "SRGAP2",
                                                         "COL27A1")),name = "Homeostatic_score")
 FeaturePlot(MP,features = "Homeostatic_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/homeotatic.score featureplot.pdf",width = 6.8,height = 2.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/homeotatic.score featureplot.pdf",width = 6.8,height = 2.5)
 ## calculate positive rate
 p1 <- FeaturePlot(MP,features = "Homeostatic_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 data <- as.data.frame(as.matrix(p1[[1]]$data))
@@ -253,7 +253,7 @@ GOID <- c("GO:0019886")
 GOgeneID <- get(GOID, org.Hs.egGO2ALLEGS) %>% mget(org.Hs.egSYMBOL) %>% unlist()
 MP <- AddModuleScore(MP,features =list(GOgeneID),name = "MHC_score")
 FeaturePlot(MP,features = "MHC_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/MHC_score featureplot(GO:0019886).pdf",width = 6.8,height = 2.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/MHC_score featureplot(GO:0019886).pdf",width = 6.8,height = 2.5)
 ## calculate positive rate
 p1 <- FeaturePlot(MP,features = "MHC_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 data <- as.data.frame(as.matrix(p1[[1]]$data))
@@ -271,7 +271,7 @@ MP <- AddModuleScore(MP,features =list(c("LOC102180655",
                                                          "IRF7",
                                                          "ISG15")),name = "IFN_score" )
 FeaturePlot(MP,features = "IFN_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/IFN_score featureplot.pdf",width = 6.8,height = 2.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/IFN_score featureplot.pdf",width = 6.8,height = 2.5)
 ## calculate positive rate
 p1 <- FeaturePlot(MP,features = "IFN_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 data <- as.data.frame(as.matrix(p1[[1]]$data))
@@ -289,7 +289,7 @@ MP <- AddModuleScore(MP,features =list(c("TOP2A",
                                                          "BIRC5",
                                                          "LOC102183306")),name = "Proliferation_score" )
 FeaturePlot(MP,features = "Proliferation_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/Proliferation_score featureplot.pdf",width = 6.8,height = 2.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/Proliferation_score featureplot.pdf",width = 6.8,height = 2.5)
 ## calculate positive rate
 p1 <- FeaturePlot(MP,features = "Proliferation_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 data <- as.data.frame(as.matrix(p1[[1]]$data))
@@ -304,12 +304,12 @@ GOID <- c("GO:0006954")
 GOgeneID <- get(GOID, org.Hs.egGO2ALLEGS) %>% mget(org.Hs.egSYMBOL) %>% unlist()
 MP <- AddModuleScore(MP,features =list(GOgeneID),name = "Inflammatory_response_score",assay = "RNA")
 FeaturePlot(MP,features = "Inflammatory_response_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave("results/SCT.CCA/MP & astrocyte processing/inflammatory_response_score splitby group featureplot.pdf",height = 3,width = 8)
+ggsave("snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/inflammatory_response_score splitby group featureplot.pdf",height = 3,width = 8)
 Idents(MP) <- "group"
 VlnPlot(MP,features = "Inflammatory_response_score1",pt.size = 0,cols = c(seurat.cols[2],seurat.cols[1]))+xlab("")+
   geom_boxplot(width=.2,col="black",fill="white")+  
   NoLegend()
-ggsave("results/SCT.CCA/MP & astrocyte processing/inflammatory_response_score splitby group vlnplot with box.pdf",height = 3.5,width = 2.5)
+ggsave("snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/inflammatory_response_score splitby group vlnplot with box.pdf",height = 3.5,width = 2.5)
 
 
 # blood derived score vs. skull derived score vlnplot
@@ -325,13 +325,13 @@ ggplot(data, aes(x=group, y=score, fill=source)) +
         panel.grid.minor = element_blank())+  
   theme_classic()+ 
   theme(text = element_text(size = 15))+NoLegend()
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/AUCell_EAE_blood&skull derived score splitby_group vlnplot.pdf",width = 4,height = 4)  
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/AUCell_EAE_blood&skull derived score splitby_group vlnplot.pdf",width = 4,height = 4)  
 
 
 # MP subcluster
 MP <- FindClusters(MP, resolution = 0.2, algorithm = 4, method = "igraph", graph.name = "reresolution",random.seed = 123)
 DimPlot(MP,group.by = "reresolution_res.0.2",split.by= "group)
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/MP subcluster res_0.2 splitby_group dimplot.pdf",width = 10.5,height = 5)  
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/MP subcluster res_0.2 splitby_group dimplot.pdf",width = 10.5,height = 5)  
 # extract seurat colors
 extract.col(Dimplot(MP,group.by="reresolution_res.0.2"))
 
@@ -368,7 +368,7 @@ ggplot(data, aes( x = Var2, y=percentage,fill = Var1))+
   ylim(c(-0.005,1.005))+
   scale_y_continuous(labels = scales::percent_format(scale = 100))+
   geom_text(aes(label=label),size=4,color="black",position = "stack")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/subcluster propotion stack barplot.pdf",width = 5,height = 6)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/subcluster propotion stack barplot.pdf",width = 5,height = 6)
 
 
 # MP subcluster addmodelescore
@@ -376,11 +376,11 @@ ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/subcluster propotio
 MP <- AddModuleScore(MP,features = list(c("P2RY12","TMEM119","HEXB","SALL1")),name = "microglia_score")
 VlnPlot(MP,features = "microglia_score1",pt.size = 0,split.by = "reresolution_res.0.2",group.by = "reresolution_res.0.2",cols = seurat.cols)+
   geom_boxplot(width=0.2,position=position_dodge(0.9),fill="white")+NoLegend()+labs(y = "Expression Level")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/microglia_score splitby_group vlnplot.pdf",height = 3.45 ,width = 3)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/microglia_score splitby_group vlnplot.pdf",height = 3.45 ,width = 3)
 ## skull derived score vlnplot
 VlnPlot(MP,features = "EAE_Skull_derived_score1",pt.size = 0,split.by = "reresolution_res.0.2",group.by = "reresolution_res.0.2",cols = seurat.cols)+
   geom_boxplot(width=0.2,position=position_dodge(0.9),fill="white")+NoLegend()+labs(y = "Expression Level")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/EAE_Skull_derived_score splitby_group vlnplot.pdf",height = 3.3,width = 3)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/EAE_Skull_derived_score splitby_group vlnplot.pdf",height = 3.3,width = 3)
 
 
 # MP DEGs analysis (ZINBWAVE method)
@@ -624,7 +624,7 @@ openxlsx::write.xlsx(genes.sig.lfc, file='results/SCT.CCA/MP & astrocyte process
 
 # MP subcluster volcano plot
 ## subcluster1
-data<-read.xlsx("results/SCT.CCA/MP & astrocyte processing/zinb_sig_genes MP_subcluster1 0.25lfc.xlsx")
+data<-read.xlsx("snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/zinb_sig_genes MP_subcluster1 0.25lfc.xlsx")
 data <- data %>%
   mutate(gene_type = case_when(logFC >= 0.25 & Pval <= 0.05 ~ "up",
                                logFC <= -0.25 & Pval <= 0.05 ~ "down",
@@ -673,10 +673,10 @@ ggplot(data = data,aes(x = logFC,y = -log10(Pval))) +
   theme(panel.border = element_rect(colour = "black", fill = NA, size= 0.5),    
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank()) 
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/MP subcluster1 DEGs volcano in injury vs control.pdf",height = 3,width = 4)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/MP subcluster1 DEGs volcano in injury vs control.pdf",height = 3,width = 4)
 
 ## subcluster2
-data<-read.xlsx("results/SCT.CCA/MP & astrocyte processing/zinb_sig_genes MP_subcluster2 0.25lfc.xlsx")
+data<-read.xlsx("snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/zinb_sig_genes MP_subcluster2 0.25lfc.xlsx")
 data <- data %>%
   mutate(gene_type = case_when(logFC >= 0.25 & Pval <= 0.05 ~ "up",
                                logFC <= -0.25 & Pval <= 0.05 ~ "down",
@@ -725,7 +725,7 @@ ggplot(data = data,aes(x = logFC,y = -log10(Pval))) +
   theme(panel.border = element_rect(colour = "black", fill = NA, size= 0.5),    
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank()) 
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/MP subcluster2 DEGs volcano in injury vs control.pdf",height = 3,width = 4)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/MP subcluster2 DEGs volcano in injury vs control.pdf",height = 3,width = 4)
 
 
 # enrichment barplot
@@ -747,7 +747,7 @@ data %>%
                                   color = "black",size = font.size),
         axis.title.y = element_text(angle=90))+
   geom_col(fill="orange",width = 0.7)
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/MP subcluster1 DEGs GO BP barplot in injury vs control.pdf",width = 6.3,height = 2.4)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/MP subcluster1 DEGs GO BP barplot in injury vs control.pdf",width = 6.3,height = 2.4)
 
 ## subcluster 1
 data<-read.csv("cluster2 gobp.csv")
@@ -767,7 +767,7 @@ data %>%
                                   color = "black",size = font.size),
         axis.title.y = element_text(angle=90))+
   geom_col(fill="orange",width = 0.7)
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/MP subcluster1 DEGs GO BP barplot in injury vs control.pdf",width = 8.0,height = 2.4)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/MP subcluster1 DEGs GO BP barplot in injury vs control.pdf",width = 8.0,height = 2.4)
 
         
 # chemokine pairs daotplot
@@ -780,7 +780,7 @@ DotPlot(seurat.obj.combined.injury,features = c("CXCL12",
                                              "LOC102175889",
                                              "CCL5",
                                              "LOC102175436"),cols = c("grey", "#ff70b5"))+RotatedAxis()+coord_flip()
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/ligand dotplot_only.injury.pdf",width = 5.5,height = 5.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/ligand dotplot_only.injury.pdf",width = 5.5,height = 5.5)
         
 ## receptor
 DotPlot(seurat.obj.combined.injury,features = c("CXCR4",
@@ -789,18 +789,18 @@ DotPlot(seurat.obj.combined.injury,features = c("CXCR4",
                                              "LOC102179993",
                                              "LOC102178953",
                                              "CCR5"),cols = c("grey", "#ff70b5"))+RotatedAxis()+coord_flip()
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/receptor dotplot_only.injury.pdf",width = 5.5,height = 5.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/receptor dotplot_only.injury.pdf",width = 5.5,height = 5.5)
 
 
 # MP cell cycle score vlnplot
 VlnPlot(MP,features = "S.Score",pt.size = 0)+ labs(y = "Expression Level")+NoLegend()
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/vlnplot s.score for subcluster.pdf",height = 3,width = 3.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/vlnplot s.score for subcluster.pdf",height = 3,width = 3.5)
 
 VlnPlot(MP,features = "G2M.Score",pt.size = 0)+ labs(y = "Expression Level")+NoLegend()
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/vlnplot G2M.score for subcluster.pdf",height = 3,width = 3.2)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/vlnplot G2M.score for subcluster.pdf",height = 3,width = 3.2)
 
 VlnPlot(MP,features = "MKI67",pt.size = 0)+ labs(y = "Expression Level")+NoLegend()
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/vlnplot MKI67 for subcluster.pdf",height = 3,width = 3.2)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/vlnplot MKI67 for subcluster.pdf",height = 3,width = 3.2)
 
         
 # Astrocyte
@@ -812,7 +812,7 @@ astro<-AddModuleScore(astro,features =list(c("SERPING1",	"LIG1",	"LOC102170144",
                                                          "FBLN1",	"LOC102190288",	"FKBP5",	"PSMB8",	
                                                          "SRGN",	"AMIGO2")),name = "A1_score" )
 FeaturePlot(astro,features = "A1_score1",split.by = "group",order = T,cols= pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/A1_score.pdf",width = 6.8,height = 2.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/A1_score.pdf",width = 6.8,height = 2.5)
 ## calculate positive rate
 p1 <- FeaturePlot(astro,features = "A1_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 data <- as.data.frame(as.matrix(p1[[1]]$data))
@@ -826,7 +826,7 @@ table(data[,4]>5)
 astro<-AddModuleScore(astro,features =list(c("CLCF1",	"TGM1",	"PTX3",	"S100A10",	"SPHK1",	"CD109",
                                              "PTGS2",	"EMP1",	"SLC10A6",	"TM4SF1",	"B3GNT5",	"CD14")),name = "A2_score" )
 FeaturePlot(astro,features = "A2_score1",split.by = "group",order = T,cols= pal)& theme(legend.position = "right")
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/A2_score.pdf",width = 6.8,height = 2.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/A2_score.pdf",width = 6.8,height = 2.5)
 ## calculate positive rate
 p1 <- FeaturePlot(astro,features = "A2_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
 data <- as.data.frame(as.matrix(p1[[1]]$data))
@@ -845,7 +845,7 @@ DoHeatmap(astro,features =c("SERPING1",	"LIG1",	"LOC102170144",	"FBLN5",	"FBLN1"
           label = F,group.by = "group" ,assay = "RNA",slot = "scale.data",size = 2,
           group.colors = c(seurat.cols[2],seurat.cols[1]))+
         scale_fill_gradientn(colors = c("lightskyblue","white","firebrick3"))
-ggsave(filename = "results/SCT.CCA/MP & astrocyte processing/astro.A1&A2 gene heatmap.png",height = 5,width = 3.5)
+ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/astro.A1&A2 gene heatmap.png",height = 5,width = 3.5)
 
 
 
