@@ -806,6 +806,10 @@ ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/vl
 VlnPlot(MP,features = "MKI67",pt.size = 0)+ labs(y = "Expression Level")+NoLegend()
 ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/vlnplot MKI67 for subcluster.pdf",height = 3,width = 3.2)
 
+
+# save MP RDS file
+saveRDS(MP,file = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/goat_ON injury snRNA_SCT.CCA MP cluster.rds"
+        
         
 # Astrocyte
 ## Isolation of monocular phagocytes populations
@@ -851,11 +855,6 @@ DoHeatmap(astro,features =c("SERPING1",	"LIG1",	"LOC102170144",	"FBLN5",	"FBLN1"
         scale_fill_gradientn(colors = c("lightskyblue","white","firebrick3"))
 ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/astro.A1&A2 gene heatmap.png",height = 5,width = 3.5)
 
-
-
-
-
-
-
-
+# save Astrocyte RDS file
+saveRDS(MP,file = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/goat_ON injury snRNA_SCT.CCA Astrocyte cluster.rds"
 
