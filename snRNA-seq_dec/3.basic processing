@@ -220,3 +220,5 @@ ggplot(data, aes( x = Var2, y=percentage,fill = Var1))+
 
 ggsave(filename = "snRNA-seq_dec/results/SCT.CCA/basic processing/all_celltype stack barplot.pdf",width = 4.5,height = 4.5)
 
+# save RDS file
+saveRDS(eurat.obj.combined,file = "snRNA-seq_dec/results/SCT.CCA/basic processing/goat_ON decoupling snRNA_SCT.CCA basic processing.rds")
