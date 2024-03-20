@@ -1,0 +1,246 @@
+###########################
+#                         #
+#     R software part     #
+#                         #
+###########################
+
+# load packages
+library(SeuratDisk)
+library(Seurat)      
+
+# create folder
+dir.create("snRNA-seq_dec/results/SCT.CCA/celltypist annotation/",recursive = T)
+
+# celltypist annotation
+## seurat object to h5ad format
+snRNA-seq_injury <- readRDS("snRNA-seq_injury/results/SCT.CCA/undefined verify/goat.ON.snRNA_SCT.CCA_undefined verify.rds")
+snRNA-seq_dec <- readRDS("snRNA-seq_dec/results/SCT.CCA/data input & merge/goat_ON decoupling snRNA_SCT.CCA.rds")
+## sceasy
+sceasy::convertFormat(snRNA-seq_injury, from="seurat", to="anndata",
+                      outFile='snRNA-seq_dec/results/SCT.CCA/celltypist annotation/snRNA-seq_injury_ref.h5ad')
+sceasy::convertFormat(snRNA-seq_dec, from="seurat", to="anndata",
+                      outFile='snRNA-seq_dec/results/SCT.CCA/celltypist annotation/snRNA-seq_dec_query.h5ad')
+
+#################################
+#                               #
+#     python software part      #
+#                               #
+#################################
+
+# load packages
+import os, sys
+import scanpy as sc
+import celltypist
+from celltypist import models
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+
+# input reference data
+adata = sc.read_h5ad('snRNA-seq_injury/results/SCT.CCA/celltypist annotation/snRNA-seq_injury_ref.h5ad')
+
+# create custom_model
+sc.pp.normalize_total(adata, inplace=True,target_sum = 1e4)
+sc.pp.log1p(adata)
+custom_model = celltypist.train(X=adata, labels='celltype_final',
+    use_SGD=True, n_jobs=1,
+    feature_selection=True,
+    details='goat_optic_nerve_control_vs_injury_2v2')
+custom_model.write('snRNA-seq_injury/results/SCT.CCA/celltypist annotation/goat_on_CustomModel_final.pkl')
+
+# input query data
+adata_query = sc.read_h5ad('snRNA-seq_injury/results/SCT.CCA/celltypist annotation/snRNA-seq_dec_query.h5ad')
+adata_query
+
+# celltype prediction
+sc.pp.normalize_total(adata_query, inplace=True,target_sum = 1e4)
+sc.pp.log1p(adata_query)
+predictions = celltypist.annotate(adata_query,model=custom_model)
+predictions.predicted_labels.to_csv('snRNA-seq_injury/results/SCT.CCA/celltypist annotation/celltypist_predicted_labels.csv',header=True)
+
+###########################
+#                         #
+#     R software part     #
+#                         #
+###########################
+
+# input celltype prediction file
+prediction <- read.csv("snRNA-seq_injury/results/SCT.CCA/celltypist annotation/celltypist_predicted_labels.csv")
+colnames(prediction) <- c("cell","celltype_prediction")
+snRNA-seq_dec$celltype <- prediction$celltype_prediction
+
+# dimplot
+DimPlot(snRNA-seq_dec,split.by = "group")
+ggsave("snRNA-seq_injury/results/SCT.CCA/celltypist annotation/celltypist prediciton celltype dimplot.pdf",height = 5,width = 12)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
