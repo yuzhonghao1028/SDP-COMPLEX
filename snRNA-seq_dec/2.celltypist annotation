@@ -73,7 +73,8 @@ snRNA-seq_dec$celltype <- prediction$celltype_prediction
 DimPlot(snRNA-seq_dec,split.by = "group")
 ggsave("snRNA-seq_injury/results/SCT.CCA/celltypist annotation/celltypist prediciton celltype dimplot.pdf",height = 5,width = 12)
 
-
+# save RDS file
+saveRDS(snRNA-seq_dec,files="
 
 
 
