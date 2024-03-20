@@ -2,6 +2,10 @@
 library(Seurat)
 library(ggplot2)
 library(reshape2)
+library(SingleCellExperiment)
+library(edgeR)
+library(zinbwave)
+library(scran)
 
 # load RDS data
 seurat.obj.combined <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/undefined verify/goat_ON injury snRNA_SCT.CCA undefined_verify.rds")
@@ -60,8 +64,81 @@ ggplot(data, aes( x = Var2, y=percentage,fill = Var1))+
 
 ggsave(filename = "snRNA-seq_injury/results/SCT.CCA/basic processing/stack barplot.pdf",width = 4.5,height = 5)
 
+
+# all celltype DEGs analysis in injury vs. control (ZINBWAVE method)
+Idents(seurat.obj.combined) <- "celltype"
+celltype_name <- as.character(unique(seurat.obj.combined$celltype))
+for (i in celltype_name){
+cluster_choose <- make.names(paste0(i))
+celltype.sub <- subset(seurat.obj.combined, idents=c(i)) 
+## Convert to SingleCellExperiment object
+sce <- as.SingleCellExperiment(celltype.sub, assay="RNA")
+
+## Filter out lowly expressed genes
+## Identify genes that have a count of at least 3 in at least 6 cells
+filter <- rowSums(assay(sce)>2)>5
+## Generate information on how many genes meet these criteria
+table(filter)
+## Filter matrix based on genes above
+sce.filt <- sce[filter,]
+## View matrix stats after filtering
+sce.filt
+rm(sce)
+## Select highly variable genes on which to focus analysis
+## Model gene variance
+sce.var <- modelGeneVar(sce.filt)
+## Using gene variance, identify the top 2000
+keep <- getTopHVGs(sce.var, n=2000)
+## Filter matrix for only these genes
+sce.filt <- sce.filt[keep,]
+rm(sce.var)
+## Generate observational weights for genes
+## Create zero-inflated negative binomial regression model to the data (note: this step is VERY computationally intensive)
+## Convert SingleCellExperiment object counts to matrix format
+## (oberservational weights can only be computed from SummarizedExperiment or matrix)
+sce.filt@assays@data@listData$counts <- as.matrix(sce.filt@assays@data@listData$counts)
+sce.zinb <- zinbwave(sce.filt, K=0, epsilon=1e12, observationalWeights=TRUE, verbose=TRUE)
+## Isolate weights to pass to DGE calculations
+weights <- assay(sce.zinb, "weights")
+#Save model with weights
+saveRDS(sce.zinb, file=paste0('snRNA-seq_injury/results/SCT.CCA/basic processing/zinb_weights_',cluster_choose,'.rds')) 
+## DGE analysis with edgeR
+## Create design matrix specifying conditions and sex as variables
+condition <- factor(sce.zinb$group)  
+design <- model.matrix(~0+condition)
+## Create edgeR object from model with weights
+dge <- DGEList(assay(sce.zinb))
+## Caluclate normalization factors with TMM
+dge <- calcNormFactors(dge)
+## Add observational weights into the edgeR object
+dge$weights <- weights
+## Estimate dispersion, passing defined design matrix to function
+dge <- estimateDisp(dge, design)
+## Fit model
+fit <- glmFit(dge, design)
+## Make comparison between AD and NS (by specifying AD first, NS becomes control)
+colnames(design)<-make.names(colnames(design))
+contrast <- makeContrasts(conditioninjury-conditioncontrol, levels=design) 
+## Zero-inflation adjusted F test for assessing DGE
+## This object will have all of the DGE results
+dge_res <- glmWeightedF(fit, contrast=contrast)
+## Save DGE so it doesn't need to be recalculated
+saveRDS(dge_res, file=paste0('snRNA-seq_injury/results/SCT.CCA/basic processing/zinb_DGE_result_',cluster_choose,'.rds'))  
+## Summarize results
+## Basic MD plot to visualize results
+## Filter DGEs meeting statistical significance mentioned above
+genes <- topTags(dge_res, n=2000, adjust.method = "BH", sort.by = "PValue", p.value = 0.05)
+## Create dataframe with gene name, log2 fold change, and adjusted p-value
+genes.sig <- data.frame(row.names(genes))
+genes.sig$Pval <- genes$table$FDR
+genes.sig$logFC <- genes$table$logFC
+genes.sig.lfc <- subset(genes.sig, genes.sig$logFC >= 0.25 | genes.sig$logFC <= -0.25)
+## Save dataframe as csv file
+openxlsx::write.xlsx(genes.sig.lfc, file=paste0('snRNA-seq_injury/results/SCT.CCA/basic processing/zinb_sig_genes_',cluster_choose,'-0.25lfc.xlsx')) 
+}
+
 # DEGs two-way bar charts
-df <- read.csv(file = "DEG number_log2fc1.csv")
+df <- read.csv(file = "snRNA-seq_injury/results/SCT.CCA/basic processing/DEG number_log2fc1.csv")
 df <- melt(df) 
 ggplot(df, aes(
   x = factor(X,levels = unique(X)),             
