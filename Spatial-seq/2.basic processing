@@ -212,6 +212,9 @@ scale_color_gradientn(values = seq(0,1,0.2),colours = c('#6699CC','#FFFF99','#CC
     
 ggsave(filename = "Spatial-seq/results/SCT.CCA/basic processing/sp_injury go term heatmap.pdf",width = 9.5,height = 4.5)
 
+# save RDS file
+saveRDS(sp_injury,"Spatial-seq/results/SCT.CCA/basic processing/goat_on spatial-seq injury.rds")
+
 ### Spatial-seq control data processing ###
 # basic processing
 sp_control <- FindVariableFeatures(sp_control)
@@ -233,7 +236,8 @@ sp_control$region <- Idents(sp_control)
 SpatialDimPlot(sp_control)
 ggsave("Spatial-seq/results/SCT.CCA/basic processing/sp_control region spatialdimplot.pdf",width = 5,height = 5)
 
-
+# save RDS file
+saveRDS(sp_injury,"Spatial-seq/results/SCT.CCA/basic processing/goat_on spatial-seq control.rds")
 
 
 
