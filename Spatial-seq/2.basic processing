@@ -1,0 +1,240 @@
+# load packages
+library(Seurat)
+library(ggplot2)
+
+# extract seurat color function
+extract.col<-function(picture){
+  p1 <- picture 
+  x<-ggplot_build(p1)
+  info = data.frame(colour = x$data[[1]]$colour, group = x$data[[1]]$group)
+  info <- unique((arrange(info, group)))
+  seurat.cols <<- as.character(info$colour)
+  rm(p1,x,info)
+}
+
+# load RDS file
+sp <- readRDS(file = "Spatial-seq/results/SCT.CCA/goat_on spatial-seq sct_cca drop_chiasm.rds")
+
+# create folder
+dir.create("Spatial-seq/results/SCT.CCA/basic processing", recursive = T)
+
+# split injury and control sample
+sp_injury <- subset(sp, orig.ident=="3OD3", invert=T)
+sp_control <- subset(sp, orig.ident=="3OD3", invert=F)
+
+### Spatial-seq injury data processing ###
+# basic processing
+sp_injury <- FindVariableFeatures(sp_injury)
+sp_injury <- RunPCA(sp_injury,verbose = F)
+
+pdf(paste0("Spatial-seq/results/SCT.CCA/basic processing/sp_injury PCA-ElbowPlot.pdf"),width = 6,height = 5)
+ElbowPlot(sp_injury,ndims = 50)
+dev.off()
+
+sp_injury <- FindNeighbors(sp_injury, dims = 1:20, reduction = "pca",graph.name = "leiden")
+sp_injury <- FindClusters(sp_injury,resolution = 0.1, algorithm = 4, method = "igraph",graph.name = "leiden",random.seed = 123)
+sp_injury <- RunUMAP(sp_injury, reduction = "pca", dims = 1:20)
+
+Idents(sp_injury) <- "leiden_res.0.1"
+sp_injury <- RenameIdents(object = sp_injury,
+                                "1"="Healthy region",
+                                "2"="Neuroinflammatory region",
+                                "3"="Meningeal region")
+sp_injury$region <- Idents(sp_injury)
+extract.col(Dimplot(sp_injury))
+my_cols <- c("Healthy region" = seurat.cols[2], "Neuroinflammation region" = seurat.cols[1], "Meningeal region" = seurat.cols[3])
+SpatialDimPlot(sp_injury,label = F,label.size = 4,cols =  my_cols)
+ggsave("Spatial-seq/results/SCT.CCA/basic processing/sp_injury region spatialdimplot.pdf",width = 10,height = 5)
+
+# DEGs heatmap
+deg <- FindMarkers(sp_injury,ident.1 = "Neuroinflammatory region",ident.2 ="Healthy region", logfc.threshold = 0.25,only.pos = T,min.pct = 0.25,verbose = T)
+write.table(deg,file = "Spatial-seq/results/SCT.CCA/basic processing/sp_injury DEGs Neuroinflammatory vs. Healthy.xls",sep = "\t")
+
+extract.col(DimPlot(sp_injury,group.by = "region"))
+top10 <- deg %>%
+  group_by(cluster) %>% 
+  top_n(n = 10, wt = avg_log2FC) 
+sp_injury <- ScaleData(sp_injury,features = rownames(sp_injury))
+top10<-top10[1:20,]
+## DoHeatmap
+DoHeatmap(sp_injury,features = top10$gene,label = F,slot = "scale.data",group.colors = c(seurat.cols[2],seurat.cols[1]))+scale_fill_gradientn(colors = c("lightskyblue","white","firebrick3"))
+ggsave(filename = "Spatial-seq/results/SCT.CCA/basic processing/sp_injury DEGs Neuroinflammatory vs. Healthy heatmap.pdf",height = 5,width = 6.5)
+
+# spatialfeatureplot
+## MBP & MOG expression
+SpatialFeaturePlot(sp_injury, features = "MBP",slot = "scale.data")
+ggsave(filename = "Spatial-seq/results/SCT.CCA/basic processing/sp_injury MBP saptialfeatureplot.pdf",height = 5,width = 7)
+SpatialFeaturePlot(sp_injury, features = "MOG",slot = "scale.data")
+ggsave(filename = "Spatial-seq/results/SCT.CCA/basic processing/sp_injury MOG saptialfeatureplot.pdf",height = 5,width = 7)
+
+## A1, A2 & DAM addmodulescore expression
+## DAM
+gene.select<-c("CD9",
+               "APOE",
+               "TREM2",
+               "TYROBP",
+               "CD63",
+               "CD68",
+               "AXL",
+               "SPP1",
+               "CTSB",
+               "CTSD",
+               "LPL",
+               "ITGAX",
+               "CST7",
+               "CSF1",
+               "GPNMB",
+               "IRF8",
+               "FTH1")
+exprMatrix <- as.data.frame(sp_injury@assays$Spatial@scale.data)
+exprMatrix_seclet <- exprMatrix[rownames(exprMatrix) %in% gene.select,]
+avg_row <- colMeans(exprMatrix_seclet)
+exprMatrix_seclet <- rbind(exprMatrix_seclet, avg_row)
+exprMatrix_seclet <- t(exprMatrix_seclet[nrow(exprMatrix_seclet),])
+sp_injury <- AddMetaData(sp_injury, metadata=exprMatrix_seclet, col.name="Avg_DAM_score_gene_Expr")
+SpatialFeaturePlot(sp_injury,features = c("Avg_DAM_score_gene_Expr"),keep.scale = "all",stroke = 0)
+ggsave(Spatial-seq/results/SCT.CCA/basic processing/sp_injury DAM score spatialfeatureplot.pdf",width = 7,height = 5)
+
+## A1
+gene.select<-c("LOC102170144",
+               "LOC102190288",
+               "SERPING1",
+               "LIG1",
+               "FBLN5",
+               "FKBP5",
+               "PSMB8",
+               "FBLN1",
+               "AMIGO2",
+               "SRGN")
+exprMatrix <- as.data.frame(sp_injury@assays$Spatial@scale.data)
+exprMatrix_seclet <- exprMatrix[rownames(exprMatrix) %in% gene.select,]
+avg_row <- colMeans(exprMatrix_seclet)
+exprMatrix_seclet <- rbind(exprMatrix_seclet, avg_row)
+exprMatrix_seclet <- t(exprMatrix_seclet[nrow(exprMatrix_seclet),])
+sp_injury <- AddMetaData(sp_injury, metadata=exprMatrix_seclet, col.name="Avg_A1_score_gene_Expr")
+SpatialFeaturePlot(sp_injury,features = c("Avg_A1_score_gene_Expr"),keep.scale = "all",stroke = 0)
+ggsave(Spatial-seq/results/SCT.CCA/basic processing/sp_injury A1 score spatialfeatureplot.pdf",width = 7,height = 5)
+
+## A2
+gene.select<-c("CLCF1",
+               "TGM1",
+               "PTX3",
+               "S100A10",
+               "SPHK1",
+               "CD109",
+               "PTGS2",
+               "EMP1",
+               "SLC10A6",
+               "TM4SF1",
+               "B3GNT5",
+               "CD14")
+exprMatrix <- as.data.frame(sp_injury@assays$Spatial@scale.data)
+exprMatrix_seclet <- exprMatrix[rownames(exprMatrix) %in% gene.select,]
+avg_row <- colMeans(exprMatrix_seclet)
+exprMatrix_seclet <- rbind(exprMatrix_seclet, avg_row)
+exprMatrix_seclet <- t(exprMatrix_seclet[nrow(exprMatrix_seclet),])
+sp_injury <- AddMetaData(sp_injury, metadata=exprMatrix_seclet, col.name="Avg_A2_score_gene_Expr")
+SpatialFeaturePlot(sp_injury,features = c("Avg_A2_score_gene_Expr"),keep.scale = "all",stroke = 0)
+ggsave(Spatial-seq/results/SCT.CCA/basic processing/sp_injury A2 score spatialfeatureplot.pdf",width = 7,height = 5)
+
+## skull & blood derived score addmodulescore expression
+skull.genes <- c("PIM1",
+                 "MFGE8",
+                 "LARS2",
+                 "LRP1",
+                 "FN1",
+                 "SLC6A6",
+                 "LOC102183471",
+                 "NHSL3",
+                 "MAN2B1",
+                 "LOC102172305",
+                 "PLD3",
+                 "GPC1",
+                 "CTSD",
+                 "NAGLU",
+                 "LOC102184794",
+                 "PSAP")
+exprMatrix <- as.data.frame(sp_injury@assays$Spatial@scale.data)
+exprMatrix_seclet <- exprMatrix[rownames(exprMatrix) %in% gene.select,]
+avg_row <- colMeans(exprMatrix_seclet)
+exprMatrix_seclet <- rbind(exprMatrix_seclet, avg_row)
+exprMatrix_seclet <- t(exprMatrix_seclet[nrow(exprMatrix_seclet),])
+sp_injury <- AddMetaData(sp_injury, metadata=exprMatrix_seclet, col.name="Avg_skull_derived_gene_Expr")
+
+blood.genes <- c("CD3G",
+                 "CTSW",
+                 "LAT",
+                 "CD3E",
+                 "PTPRCAP",
+                 "CD4",
+                 "GZMA",
+                 "LOC102184497",
+                 "LCK",
+                 "IL17A",
+                 "RGS16",
+                 "NKG7",
+                 "TNFSF11",
+                 "IFNG",
+                 "CSF2",
+                 "NRGN",
+                 "S100A9")
+exprMatrix <- as.data.frame(sp_injury@assays$Spatial@scale.data)
+exprMatrix_seclet <- exprMatrix[rownames(exprMatrix) %in% gene.select,]
+avg_row <- colMeans(exprMatrix_seclet)
+exprMatrix_seclet <- rbind(exprMatrix_seclet, avg_row)
+exprMatrix_seclet <- t(exprMatrix_seclet[nrow(exprMatrix_seclet),])
+sp_injury <- AddMetaData(sp_injury, metadata=exprMatrix_seclet, col.name="Avg_blood_derived_gene_Expr")
+
+SpatialFeaturePlot(sp_injury,features = c("Avg_skull_derived_gene_Expr","Avg_blood_derived_gene_Expr"),keep.scale = "all",stroke = 0)
+ggsave("Spatial-seq/results/SCT.CCA/basic processing/sp_injury skull & blood_derived_score spatialfeatureplot.pdf", width = 7,height = 10.5)
+
+# gene ontology enrichment dotplot
+data <- read.xlsx("Spatial-seq/results/SCT.CCA/basic processing/sp_injury go term summary.xlsx")
+rownames(data)<-data$go.term
+data <- data[,-1]
+data <- t(data)
+data %>% scale() %>% as.data.frame()
+data.final <- data %>% scale(center = T) %>% as.data.frame()
+data.final <- data.final %>% mutate(data.change=row.names(.)) %>% melt()
+## plot
+ggplot(data.final,aes(x=data.change,y=variable))+
+scale_color_gradientn(values = seq(0,1,0.2),colours = c('#6699CC','#FFFF99','#CC3333'))+  # c('#6699CC','#FFFF99','#CC3333')
+  theme_bw()+
+  geom_point(aes(size=`value`,
+                 color=`value`))+
+  theme(panel.grid = element_blank(),axis.text.x =element_text(angle =90,hjust =0.5,vjust = 0.5))+
+  xlab(NULL) + ylab(NULL)+
+  theme(panel.border = element_rect(fill=NA,color="black", linewidth=1, linetype="solid"),
+    axis.text = element_text(
+    face="bold", 
+    color="black",
+    size=10))
+    
+ggsave(filename = "Spatial-seq/results/SCT.CCA/basic processing/sp_injury go term heatmap.pdf",width = 9.5,height = 4.5)
+
+### Spatial-seq control data processing ###
+# basic processing
+sp_control <- FindVariableFeatures(sp_control)
+sp_control <- RunPCA(sp_control,verbose = F)
+
+pdf(paste0("Spatial-seq/results/SCT.CCA/basic processing/sp_control PCA-ElbowPlot.pdf"),width = 6,height = 5)
+ElbowPlot(sp_control,ndims = 50)
+dev.off()
+
+sp_control <- FindNeighbors(sp_control, dims = 1:20, reduction = "pca",graph.name = "leiden")
+sp_control <- FindClusters(sp_control,resolution = 0.1, algorithm = 4, method = "igraph",graph.name = "leiden",random.seed = 123)
+sp_control <- RunUMAP(sp_control, reduction = "pca", dims = 1:20)
+
+Idents(sp_control) <- "leiden_res.0.1"
+sp_control <- RenameIdents(object = sp_control,
+                                "1"="Optic nerve",
+                                "2"="Meninge")
+sp_control$region <- Idents(sp_control)
+SpatialDimPlot(sp_control)
+ggsave("Spatial-seq/results/SCT.CCA/basic processing/sp_control region spatialdimplot.pdf",width = 5,height = 5)
+
+
+
+
+
+
