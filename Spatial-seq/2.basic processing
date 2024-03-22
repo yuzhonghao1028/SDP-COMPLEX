@@ -188,30 +188,6 @@ sp_injury <- AddMetaData(sp_injury, metadata=exprMatrix_seclet, col.name="Avg_bl
 SpatialFeaturePlot(sp_injury,features = c("Avg_skull_derived_gene_Expr","Avg_blood_derived_gene_Expr"),keep.scale = "all",stroke = 0)
 ggsave("Spatial-seq/results/SCT.CCA/basic processing/sp_injury skull & blood_derived_score spatialfeatureplot.pdf", width = 7,height = 10.5)
 
-# gene ontology enrichment dotplot
-data <- read.xlsx("Spatial-seq/results/SCT.CCA/basic processing/sp_injury go term summary.xlsx")
-rownames(data)<-data$go.term
-data <- data[,-1]
-data <- t(data)
-data %>% scale() %>% as.data.frame()
-data.final <- data %>% scale(center = T) %>% as.data.frame()
-data.final <- data.final %>% mutate(data.change=row.names(.)) %>% melt()
-## plot
-ggplot(data.final,aes(x=data.change,y=variable))+
-scale_color_gradientn(values = seq(0,1,0.2),colours = c('#6699CC','#FFFF99','#CC3333'))+  # c('#6699CC','#FFFF99','#CC3333')
-  theme_bw()+
-  geom_point(aes(size=`value`,
-                 color=`value`))+
-  theme(panel.grid = element_blank(),axis.text.x =element_text(angle =90,hjust =0.5,vjust = 0.5))+
-  xlab(NULL) + ylab(NULL)+
-  theme(panel.border = element_rect(fill=NA,color="black", linewidth=1, linetype="solid"),
-    axis.text = element_text(
-    face="bold", 
-    color="black",
-    size=10))
-    
-ggsave(filename = "Spatial-seq/results/SCT.CCA/basic processing/sp_injury go term heatmap.pdf",width = 9.5,height = 4.5)
-
 # save RDS file
 saveRDS(sp_injury,"Spatial-seq/results/SCT.CCA/basic processing/goat_on spatial-seq injury.rds")
 
