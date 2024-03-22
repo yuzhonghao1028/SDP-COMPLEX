@@ -1,0 +1,129 @@
+###########################
+#                         #
+#     R software part     #
+#                         #
+###########################
+
+# load packages
+library(SeuratDisk)
+library(Seurat)   
+
+# create folder
+dir.create("Spatial-seq/results/SCT.CCA/tangam",recursive = T)
+
+# load snRNA-seq and spatial-seq data
+snRNA-seq <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/undefined verify/goat_ON injury snRNA_SCT.CCA undefined_verify.rds")
+snRNA-seq_MP <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/goat_ON injury snRNA_SCT.CCA MP cluster.rds")
+spatial####################
+
+
+
+
+
+
+
+
+
+# export metadata and merge snRNA-seq celltype & snRNA-seq_MP subcluster colume
+meta_snRNA-seq <- write.table(snRNA-seq@meta.data,sep="\t",file="Spatial-seq/results/SCT.CCA/tangam/meta_snRNA-seq.csv"))
+meta_snRNA-seq_MP <- write.table(snRNA-seq_MP@meta.data,sep="\t",file="Spatial-seq/results/SCT.CCA/tangam/meta_snRNA-seq_MP.csv"))
+meta_snRNA-seq <- read.csv(file = "snRNA-seq@meta.data,sep="\t",file="Spatial-seq/results/SCT.CCA/tangam/meta_snRNA-seq merge meta_snRNA-seq_MP.csv")
+snRNA-seq$celltype_MP1_5 <- meta_snRNA-seq$celltype_MP1_5
+
+# isolate control sample
+snRNA-seq_control <- subset(snRNA-seq, group=="control")
+
+# sceasy package: seurat change to h5ad format
+sceasy::convertFormat(snRNA-seq, from="seurat", to="anndata",
+                      outFile='Spatial-seq/results/SCT.CCA/tangam/snRNA-seq refdata.h5ad')
+sceasy::convertFormat(snRNA-seq_control, from="seurat", to="anndata",
+                      outFile='Spatial-seq/results/SCT.CCA/tangam/snRNA-seq_control refdata.h5ad')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
