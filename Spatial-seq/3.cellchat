@@ -1,0 +1,143 @@
+# load packages
+library(CellChat)
+library(ggplot2)
+library(patchwork)
+library(ggalluvial)
+library(igraph)
+
+# load RDS file
+sp_injury <- readRDS(file = "Spatial-seq/results/SCT.CCA/basic processing/goat_on spatial-seq injury.rds")
+sp_control <- readRDS(file = "Spatial-seq/results/SCT.CCA/basic processing/goat_on spatial-seq control.rds")
+
+# create folder
+dir.create("Spatial-seq/results/SCT.CCA/cellchat", recursive = T)
+
+### cellchat for injury ###
+# injury border crosstalk
+## extract injury border region
+region.meta <- read.csv("Spatial-seq/results/SCT.CCA/cellchat/sp_injury 3region.import2R.csv")
+rownames(region.meta) <- region.meta$Barcode
+region.meta <- region.meta[,-1]
+sp_injury$border <- region.meta
+Idents(sp_injury) <- "border"
+sp_injury_border <- subset(sp_injury,border=="Border area")
+
+## cellchat analysis
+Idents(sp_injury_border) <- "region"
+sp_injury_border$region <- droplevels(sp_injury_border$region)
+data_input <- sp_injury_border[["Spatial"]]@data
+meta <- sp_injury_border@meta.data
+cellchat <- createCellChat(object = data_input, meta = meta, group.by = "region")
+levels(cellchat@idents) 
+groupSize <- as.numeric(table(cellchat@idents)) 
+CellChatDB <- CellChatDB.human
+showDatabaseCategory(CellChatDB)
+dplyr::glimpse(CellChatDB$interaction)
+CellChatDB.use <- CellChatDB 
+cellchat@DB <- CellChatDB.use
+rm(CellChatDB,CellChatDB.use)
+cellchat <- subsetData(cellchat)
+future::plan("multicore", workers = 4) 
+cellchat <- identifyOverExpressedGenes(cellchat)
+cellchat <- identifyOverExpressedInteractions(cellchat)
+#cellchat <- projectData(cellchat, PPI.human)
+cellchat <- computeCommunProb(cellchat, raw.use = T)
+cellchat <- filterCommunication(cellchat, min.cells = 10)
+df.net <- subsetCommunication(cellchat)
+write.table(df.net,paste0('Spatial-seq/results/SCT.CCA/cellchat/sp_injury border cellchat.df.net.xls'),sep = "\t",row.names = F)
+cellchat <- computeCommunProbPathway(cellchat)
+cellchat <- aggregateNet(cellchat)
+saveRDS(cellchat,file = "Spatial-seq/results/SCT.CCA/cellchat/sp_injury border cellchat.rds")
+
+## cellchat plot
+pairLR.use<-as.data.frame(c("ITGAV_ITGB1_ADGRE5",	"CADM1_CADM1",	"CDH2_CDH2",	"COL1A1_ITGAV_ITGB8",	"COL1A2_ITGAV_ITGB8",	"COL2A1_ITGAV_ITGB8",	"COL2A1_CD44",
+                            "COL2A1_SDC4",	"COL3A1_ADGRG1",	"COL6A1_ITGAV_ITGB8",	"COL6A2_ITGAV_ITGB8",	"COL9A3_ITGAV_ITGB8",	"COL9A3_CD44",	"COL9A3_SDC4",
+                            "CX3CL1_CX3CR1",	"FGF1_FGFR2",	"FN1_ITGAV_ITGB1",	"FN1_ITGAV_ITGB8",	"Glutamate-Glu-SLC1A3_GLS_GRIA1",	"HSPG2_DAG1",	"JAM2_ITGAV_ITGB1",
+                            "L1CAM_L1CAM",	"LPAR1_ADGRE5",	"MDK_NCL",	"NRXN1_CLSTN1",	"NRXN1_CLSTN3",	"NRXN1_NLGN3",	"NRXN2_CLSTN1",	"NRXN2_CLSTN3",	"NRXN2_NLGN3",
+                            "TGM2_ADGRG1",	"THY1_ADGRE5"))
+netVisual_bubble(cellchat, remove.isolate = FALSE,pairLR.use = pairLR.use)+coord_flip()+rotate_x_text(angle = 45,hjust = 1,vjust = 1)
+ggsave(filename = "Spatial-seq/results/SCT.CCA/cellchat/sp_injury border net.bubble plot.pdf",width = 10,height = 2.5)
+
+# meninge, healthy & neuroinflammtory region crosstalk at border 
+meta <- read.xlsx("Spatial-seq/results/SCT.CCA/cellchat/meta sp_injury border.xlsx")
+sp_injury$meninge_parenchyma_defined <- meta$meninge_parenchyma_defined
+
+Idents(sp_injury)<-"meninge_parenchyma_defined"
+sp_meninge_parenchyma <- subset(sp_injury,idents=c("border_on_normal_parenchyma","border_meninge","border_on_inflam_parenchyma","healthy_meninge","healthy_on_parenchyma"))
+
+## cellchat analysis
+Idents(sp_meninge_parenchyma)<-"meninge_parenchyma_defined"
+data.input <- sp_meninge_parenchyma[["Spatial"]]@data
+meta <- sp_meninge_parenchyma@meta.data 
+cellchat <- createCellChat(object = data.input, meta = meta, group.by = "meninge_parenchyma_defined")
+levels(cellchat@idents) 
+groupSize <- as.numeric(table(cellchat@idents)) 
+CellChatDB <- CellChatDB.human 
+dplyr::glimpse(CellChatDB$interaction)
+CellChatDB.use <- CellChatDB 
+cellchat@DB <- CellChatDB.use
+rm(CellChatDB,CellChatDB.use)
+cellchat <- subsetData(cellchat)
+future::plan("multicore", workers = 4) 
+cellchat <- identifyOverExpressedGenes(cellchat)
+cellchat <- identifyOverExpressedInteractions(cellchat)
+cellchat <- computeCommunProb(cellchat, raw.use = T)
+cellchat <- filterCommunication(cellchat, min.cells = 10)
+df.net <- subsetCommunication(cellchat)
+write.xlsx(df.net,file = paste0('Spatial-seq/results/SCT.CCA/cellchat/sp_injury border meninge_parenchyma_cellchat.df.net.xlsx'))
+cellchat <- computeCommunProbPathway(cellchat)
+cellchat <- aggregateNet(cellchat)
+saveRDS(cellchat,file = "Spatial-seq/results/SCT.CCA/cellchat/sp_injury border meninge_parenchyma_cellchat.rds")
+
+## gene ontology enrichment dotplot
+data <- read.xlsx("Spatial-seq/results/SCT.CCA/basic processing/sp_injury go term summary.xlsx")
+rownames(data)<-data$go.term
+data <- data[,-1]
+data <- t(data)
+data %>% scale() %>% as.data.frame()
+data.final <- data %>% scale(center = T) %>% as.data.frame()
+data.final <- data.final %>% mutate(data.change=row.names(.)) %>% melt()
+## plot
+ggplot(data.final,aes(x=data.change,y=variable))+
+scale_color_gradientn(values = seq(0,1,0.2),colours = c('#6699CC','#FFFF99','#CC3333'))+  # c('#6699CC','#FFFF99','#CC3333')
+  theme_bw()+
+  geom_point(aes(size=`value`,
+                 color=`value`))+
+  theme(panel.grid = element_blank(),axis.text.x =element_text(angle =90,hjust =0.5,vjust = 0.5))+
+  xlab(NULL) + ylab(NULL)+
+  theme(panel.border = element_rect(fill=NA,color="black", linewidth=1, linetype="solid"),
+    axis.text = element_text(
+    face="bold", 
+    color="black",
+    size=10))
+    
+ggsave(filename = "Spatial-seq/results/SCT.CCA/cellchat/sp_injury border meninge_parenchyma_cellchat go term heatmap.pdf",width = 9.5,height = 4.5)
+
+
+### cellchat for control ###
+# cellchat analysis
+Idents(sp_control) <- "region"
+data_input <- sp_control[["Spatial"]]@data
+meta <- sp_control@meta.data
+cellchat <- createCellChat(object = data_input, meta = meta, group.by = "region")
+levels(cellchat@idents) 
+groupSize <- as.numeric(table(cellchat@idents)) 
+CellChatDB <- CellChatDB.human
+showDatabaseCategory(CellChatDB)
+dplyr::glimpse(CellChatDB$interaction)
+CellChatDB.use <- CellChatDB 
+cellchat@DB <- CellChatDB.use
+rm(CellChatDB,CellChatDB.use)
+cellchat <- subsetData(cellchat)
+future::plan("multicore", workers = 4) 
+cellchat <- identifyOverExpressedGenes(cellchat)
+cellchat <- identifyOverExpressedInteractions(cellchat)
+#cellchat <- projectData(cellchat, PPI.human)
+cellchat <- computeCommunProb(cellchat, raw.use = T)
+cellchat <- filterCommunication(cellchat, min.cells = 10)
+df.net <- subsetCommunication(cellchat)
+write.table(df.net,paste0('Spatial-seq/results/SCT.CCA/cellchat/sp_control cellchat.df.net.xls'),sep = "\t",row.names = F)
+cellchat <- computeCommunProbPathway(cellchat)
+cellchat <- aggregateNet(cellchat)
+saveRDS(cellchat,file = "Spatial-seq/results/SCT.CCA/cellchat/sp_control cellchat.rds")
+
