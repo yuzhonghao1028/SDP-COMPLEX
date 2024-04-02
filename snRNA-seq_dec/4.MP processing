@@ -19,13 +19,13 @@ extract.col<-function(picture){
 }
 
 # load RDS data
-seurat.obj.combined <- readRDS(file = "snRNA-seq_dec/results/SCT.CCA/basic processing/goat_ON decoupling snRNA_SCT.CCA basic processing.rds")
+snRNA_seq_dec <- readRDS(file = "snRNA_seq_dec/results/SCT.CCA/3.basic processing/goat_ON decoupling snRNA_SCT.CCA basic processing.rds")
 
 # create folder
-dir.create("snRNA-seq_dec/results/SCT.CCA/MP processing",recursive = T)
+dir.create("snRNA_seq_dec/results/SCT.CCA/4.MP processing",recursive = T)
 
 # Isolation of monocular phagocytes populations
-MP_dec <- subset(seurat.obj.combined, celltype=="MP")
+MP_dec <- subset(snRNA_seq_dec, celltype=="MP")
 
 
 # MP_dec subcluster prediction 
@@ -41,9 +41,9 @@ MP_dec <- subset(seurat.obj.combined, celltype=="MP")
 MP_injury <- readRDS("snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/goat_ON injury snRNA_SCT.CCA MP cluster.rds")
 ## sceasy
 sceasy::convertFormat(MP_injury, from="seurat", to="anndata",
-                      outFile='snRNA-seq_dec/results/SCT.CCA/MP processing/snRNA-seq_MP_injury_ref.h5ad')
+                      outFile='snRNA_seq_dec/results/SCT.CCA/4.MP processing/snRNA-seq_MP_injury_ref.h5ad')
 sceasy::convertFormat(MP_dec, from="seurat", to="anndata",
-                      outFile='snRNA-seq_dec/results/SCT.CCA/MP processing/snRNA-seq_MP_dec_query.h5ad')
+                      outFile='snRNA_seq_dec/results/SCT.CCA/4.MP processing/snRNA-seq_MP_dec_query.h5ad')
 
 #################################
 #                               #
@@ -61,26 +61,25 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 ## input reference data
-adata = sc.read_h5ad('snRNA-seq_dec/results/SCT.CCA/MP processing/snRNA-seq_MP_injury_ref.h5ad')
+adata = sc.read_h5ad('snRNA_seq_dec/results/SCT.CCA/4.MP processing/snRNA-seq_MP_injury_ref.h5ad')
 
 ## create custom_model
 sc.pp.normalize_total(adata, inplace=True,target_sum = 1e4)
 sc.pp.log1p(adata)
-custom_model = celltypist.train(X=adata, labels='celltype_final',
-    use_SGD=True, n_jobs=1,
-    feature_selection=True,
-    details='goat_optic_nerve_control_vs_injury_2v2')
-custom_model.write('snRNA-seq_dec/results/SCT.CCA/MP processing/goat_on_CustomModel_MP_injury_subcluster.pkl')
+custom_model = celltypist.train(X=adata, labels='subcluster',
+                                use_SGD=True, n_jobs=1,
+                                feature_selection=True,
+                                details='goat_optic_nerve_control_vs_injury_2v2')
+custom_model.write('snRNA_seq_dec/results/SCT.CCA/4.MP processing/goat_on_CustomModel_MP_injury_subcluster.pkl')
 
 ## input query data
-adata_query = sc.read_h5ad('snRNA-seq_dec/results/SCT.CCA/MP processing/snRNA-seq_MP_dec_query.h5ad')
-adata_query
+adata_query = sc.read_h5ad('results/SCT.CCA/4.MP processing/snRNA-seq_MP_dec_query.h5ad')
 
 ## celltype prediction
 sc.pp.normalize_total(adata_query, inplace=True,target_sum = 1e4)
 sc.pp.log1p(adata_query)
 predictions = celltypist.annotate(adata_query,model=custom_model)
-predictions.predicted_labels.to_csv('snRNA-seq_dec/results/SCT.CCA/MP processing/MP subcluster celltypist_predicted_labels.csv',header=True)
+predictions.predicted_labels.to_csv('results/SCT.CCA/4.MP processing MP subcluster celltypist_predicted_labels.csv',header=True)
 
 ###########################
 #                         #
@@ -89,16 +88,22 @@ predictions.predicted_labels.to_csv('snRNA-seq_dec/results/SCT.CCA/MP processing
 ###########################
 
 ## input celltype prediction file
-prediction <- read.csv("snRNA-seq_dec/results/SCT.CCA/MP processing/MP subcluster celltypist_predicted_labels.csv")
+prediction <- read.csv("snRNA_seq_dec/results/SCT.CCA/4.MP processing/MP subcluster celltypist_predicted_labels.csv")
 colnames(prediction) <- c("cell","celltype_prediction")
 MP_dec$subcluster <- prediction$celltype_prediction
 
+DimPlot(MP_dec,group.by = "subcluster")
+
+# change defaultassay
+DefaultAssay(MP_dec) <- "RNA"
+
+# scale data
+MP_dec <- ScaleData(MP_dec,features = rownames(MP_dec))
 
 # MP_dec subcluster propotion stack barplot
 data <- as.data.frame(table(MP_dec$subcluster,MP_dec$group))
 data <- data %>% group_by(Var2) %>% mutate(percentage = Freq/sum(Freq)) %>% mutate(label = Freq/sum(Freq)*100)
 data$label <- paste(sprintf("%.1f", data$label),"%")
-data <- data[11:20,]
 
 extract.col(DimPlot(MP_dec,group.by = "subcluster"))
 ggplot(data, aes( x = Var2, y=percentage,fill = Var1))+
@@ -125,7 +130,7 @@ ggplot(data, aes( x = Var2, y=percentage,fill = Var1))+
   scale_y_continuous(labels = scales::percent_format(scale = 100))+
   geom_text(aes(label=label),size=4,color="black",position = "stack")
 
-ggsave(filename = "snRNA-seq_dec/results/SCT.CCA/MP processing/MP_dec propotion stack barplot.pdf",width = 5,height = 6)
+ggsave(filename = "snRNA_seq_dec/results/SCT.CCA/4.MP processing/MP_dec propotion stack barplot.pdf",width = 5,height = 6)
 
 
 # addmodulescore
@@ -147,58 +152,57 @@ skull.genes <- c("PIM1",
                  "NAGLU",
                  "LOC102184794",
                  "PSAP")
-MP_dec <- AddModuleScore(MP_dec,features =list(skull.genes)),name = "EAE_Skull_derived_score" )
+MP_dec <- AddModuleScore(MP_dec,features =list(skull.genes),name = "EAE_Skull_derived_score",assay = "RNA")
 FeaturePlot(MP_dec,features = "EAE_Skull_derived_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave(filename = "snRNA-seq_dec/results/SCT.CCA/MP processing/Skull_derived_score featureplot.pdf",width = 14.5,height = 2.8)
+ggsave(filename = "snRNA_seq_dec/results/SCT.CCA/4.MP processing/Skull_derived_score featureplot.pdf",width = 8,height = 3)
 ## vlnplot
-VlnPlot(MP_dec,features = "EAE_Skull_derived_score1",group.by = "subcluster",pt.size = 0,split.by = "group")+
-  xlab("") + geom_boxplot(width=.2,position=position_dodge(0.9))+
-  NoLegend()+ scale_fill_manual(values = c('limegreen', 'tomato'))
-ggsave(filename = "snRNA-seq_dec/results/SCT.CCA/MP processing/sukll derived score MP_subcluster split by group vlnplot.pdf",height =3.5,width = 5 )
+VlnPlot(MP_dec,features = "EAE_Skull_derived_score1",pt.size = 0,split.by = "group")+
+  xlab("") + geom_boxplot(width=.2,position=position_dodge(0.9),outlier.shape = NA)+
+  NoLegend()+ scale_fill_manual(values = c('limegreen', 'tomato'))+ylim(c(-1,1.5))
+ggsave(filename = "snRNA_seq_dec/results/SCT.CCA/4.MP processing/sukll derived score reresolution_res.0.2 vlnplot.pdf",height =3.5,width = 1.8 )
 
-VlnPlot(MP_dec,features = "EAE_Skull_derived_score1",group.by = "group",pt.size = 0)+
-  xlab("") + geom_boxplot(width=.2,position=position_dodge(0.9))+
-  NoLegend()+ scale_fill_manual(values = c('limegreen', 'tomato'))
-ggsave(filename = "snRNA-seq_dec/results/SCT.CCA/MP processing/sukll derived score reresolution_res.0.2 vlnplot.pdf",height =5,width = 2.5)
+VlnPlot(MP_dec,features = "EAE_Skull_derived_score1",group.by = "subcluster",pt.size = 0,split.by = "group")+
+  xlab("") + geom_boxplot(width=.2,position=position_dodge(0.9),outlier.shape = NA)+
+  NoLegend()+ scale_fill_manual(values = c('limegreen', 'tomato'))+ylim(c(-1.5,2.5))
+ggsave(filename = "snRNA_seq_dec/results/SCT.CCA/4.MP processing/sukll derived score MP_subcluster split by group vlnplot.pdf",height =3.5,width = 5 )
 
 ## pro-inflammtion score
 GOID <- c("GO:0050729")
 GOgeneID <- get(GOID, org.Hs.egGO2ALLEGS) %>% mget(org.Hs.egSYMBOL) %>% unlist()
 MP_dec <- AddModuleScore(MP_dec,features =list(GOgeneID),name = "positive_inflammatory_response_score",assay = "RNA")
 FeaturePlot(MP_dec,features = "positive_inflammatory_response_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave("snRNA-seq_dec/results/SCT.CCA/MP processing/positive_inflammatory_response_score splitby group featureplot.pdf",height = 3,width = 8)
+ggsave("snRNA_seq_dec/results/SCT.CCA/4.MP processing/positive_inflammatory_response_score splitby group featureplot.pdf",height = 3,width = 8)
 Idents(MP_dec) <- "group"
 VlnPlot(MP_dec,features = "positive_inflammatory_response_score1",pt.size = 0)+xlab("")+
-  geom_boxplot(width=.2,col="black",fill="white")+  
-  NoLegend()
-ggsave("snRNA-seq_dec/results/SCT.CCA/MP processing/positive_inflammatory_response_score splitby group vlnplot.pdf",height = 5,width = 2.5)
+  geom_boxplot(width=.2,col="black",fill="white",outlier.shape = NA)+  
+  NoLegend()+ylim(c(-0.2,0.2))
+ggsave("snRNA_seq_dec/results/SCT.CCA/4.MP processing/positive_inflammatory_response_score splitby group vlnplot.pdf",height = 5,width = 2.5)
 
 ## DAM score
 ## featureplot
 MP_dec <- AddModuleScore(MP_dec,features =list(c("CD9",
-                                                         "APOE",
-                                                         "TREM2",
-                                                         "TYROBP",
-                                                         "CD63",
-                                                         "CD68",
-                                                         "AXL",
-                                                         "SPP1",
-                                                         "CTSB",
-                                                         "CTSD",
-                                                         "LPL",
-                                                         "ITGAX",
-                                                         "CST7",
-                                                         "CSF1",
-                                                         "GPNMB",
-                                                         "IRF8",
-                                                         "FTH1")),name = "DAM_score" )
+                                                 "APOE",
+                                                 "TREM2",
+                                                 "TYROBP",
+                                                 "CD63",
+                                                 "CD68",
+                                                 "AXL",
+                                                 "SPP1",
+                                                 "CTSB",
+                                                 "CTSD",
+                                                 "LPL",
+                                                 "ITGAX",
+                                                 "CST7",
+                                                 "CSF1",
+                                                 "GPNMB",
+                                                 "IRF8",
+                                                 "FTH1")),name = "DAM_score",assay = "RNA")
 FeaturePlot(MP_dec,features = "DAM_score1",split.by = "group",order = T,cols = pal)& theme(legend.position = "right")
-ggsave("snRNA-seq_dec/results/SCT.CCA/MP processing/DAM score splitby group featureplot.pdf",height = 3,width = 8)
+ggsave("snRNA_seq_dec/results/SCT.CCA/4.MP processing/DAM score splitby group featureplot.pdf",height = 3,width = 8)
 ## violin plot
 Idents(MP_dec) <- "group"
-VlnPlot(MP_dec,features = "DAM_score1",pt.size = 0)+NoLegend()+xlab("")+geom_boxplot(width=.2,col="black",fill="white")
-ggsave("snRNA-seq_dec/results/SCT.CCA/MP processing/DAM score splitby group vlnplot.pdf",height = 5,width = 2.5)
+VlnPlot(MP_dec,features = "DAM_score1",pt.size = 0)+NoLegend()+xlab("")+geom_boxplot(width=.2,col="black",fill="white",outlier.shape = NA)+ylim(c(-1.5,4))
+ggsave("snRNA_seq_dec/results/SCT.CCA/4.MP processing/DAM score splitby group vlnplot.pdf",height = 5,width = 2.5)
 
 # save MP_dec RDS file
-saveRDS(MP_dec,file = "snRNA-seq_dec/results/SCT.CCA/MP processing/goat_ON injury snRNA_SCT.CCA MP cluster.rds"
-
+saveRDS(MP_dec,file = "snRNA_seq_dec/results/SCT.CCA/4.MP processing/goat_ON injury snRNA_SCT.CCA MP cluster.rds")
