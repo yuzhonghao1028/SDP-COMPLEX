@@ -9,23 +9,23 @@ library(SeuratDisk)
 library(Seurat)   
 
 # create folder
-dir.create("Spatial-seq/results/SCT.CCA/tangam",recursive = T)
+dir.create("Spatial-seq/results/SCT.CCA/4.tangam",recursive = T)
 
 # load snRNA-seq and spatial-seq data
 ## load snRNA-seq data
-snRNA-seq <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/undefined verify/goat_ON injury snRNA_SCT.CCA undefined_verify.rds")
-snRNA-seq_MP <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/MP & astrocyte processing/goat_ON injury snRNA_SCT.CCA MP cluster.rds")
+snRNA-seq <- readRDS(file = "snRNA-seq_injury/results/SCT.CCA/2.undefined verify/goat_ON injury snRNA_SCT.CCA undefined_verify.rds")
+snRNA-seq_MP <- readRDS(file = "snRNA_seq_injury/results/SCT.CCA/4.MP & astrocyte processing/goat_ON injury snRNA_SCT.CCA MP cluster.rds")
 ## load spatial-seq data
-sp_injury <- readRDS(file = "Spatial-seq/results/SCT.CCA/basic processing/goat_on spatial-seq injury.rds")
-sp_control <- readRDS(file = "Spatial-seq/results/SCT.CCA/basic processing/goat_on spatial-seq control.rds")
+sp_injury <- readRDS(file = "Spatial-seq/results/SCT.CCA/2.basic processing/goat_on spatial-seq injury.rds")
+sp_control <- readRDS(file = "Spatial-seq/results/SCT.CCA/2.basic processing/goat_on spatial-seq control.rds")
 sp_2os3 <- subset(sp_injury,orig.ident=="2OS3")
 sp_3os3 <- subset(sp_injury,orig.ident=="3OS3")
 sp_3od3 <- sp_control
 
 # export metadata and merge snRNA-seq celltype & snRNA-seq_MP subcluster colume
-meta_snRNA-seq <- write.table(snRNA-seq@meta.data,sep="\t",file="Spatial-seq/results/SCT.CCA/tangam/meta_snRNA-seq.csv"))
-meta_snRNA-seq_MP <- write.table(snRNA-seq_MP@meta.data,sep="\t",file="Spatial-seq/results/SCT.CCA/tangam/meta_snRNA-seq_MP.csv"))
-meta_snRNA-seq <- read.csv(file = "snRNA-seq@meta.data,sep="\t",file="Spatial-seq/results/SCT.CCA/tangam/meta_snRNA-seq merge meta_snRNA-seq_MP.csv")
+meta_snRNA-seq <- write.table(snRNA-seq@meta.data,sep="\t",file="Spatial-seq/results/SCT.CCA/4.tangam/meta_snRNA-seq.csv"))
+meta_snRNA-seq_MP <- write.table(snRNA-seq_MP@meta.data,sep="\t",file="Spatial-seq/results/SCT.CCA/4.tangam/meta_snRNA-seq_MP.csv"))
+meta_snRNA-seq <- read.csv(file = "snRNA-seq@meta.data,sep="\t",file="Spatial-seq/results/SCT.CCA/4.tangam/meta_snRNA-seq merge meta_snRNA-seq_MP.csv")
 snRNA-seq$celltype_MP1_5 <- meta_snRNA-seq$celltype_MP1_5
 
 # isolate control sample
@@ -33,15 +33,15 @@ snRNA-seq_control <- subset(snRNA-seq, group=="control")
 
 # sceasy package: seurat change to h5ad format
 sceasy::convertFormat(snRNA-seq, from="seurat", to="anndata",
-                      outFile='Spatial-seq/results/SCT.CCA/tangam/snRNA-seq refdata.h5ad')
+                      outFile='Spatial-seq/results/SCT.CCA/4.tangam/snRNA-seq refdata.h5ad')
 sceasy::convertFormat(snRNA-seq_control, from="seurat", to="anndata",
-                      outFile='Spatial-seq/results/SCT.CCA/tangam/snRNA-seq_control refdata.h5ad')
+                      outFile='Spatial-seq/results/SCT.CCA/4.tangam/snRNA-seq_control refdata.h5ad')
 sceasy::convertFormat(sp_2os3, from="seurat", to="anndata",
-                      outFile='Spatial-seq/results/SCT.CCA/tangam/sp_2os3.h5ad')
+                      outFile='Spatial-seq/results/SCT.CCA/4.tangam/sp_2os3.h5ad')
 sceasy::convertFormat(sp_3os3, from="seurat", to="anndata",
-                      outFile='Spatial-seq/results/SCT.CCA/tangam/sp_3os3.h5ad')
+                      outFile='Spatial-seq/results/SCT.CCA/4.tangam/sp_3os3.h5ad')
 sceasy::convertFormat(sp_3od3, from="seurat", to="anndata",
-                      outFile='Spatial-seq/results/SCT.CCA/tangam/sp_3od3.h5ad')
+                      outFile='Spatial-seq/results/SCT.CCA/4.tangam/sp_3od3.h5ad')
 
 #################################
 #                               #
@@ -82,10 +82,10 @@ def cellpose_he(img, min_size=15, flow_threshold=0.4, channel_cellpose=0):
     return res
 
 # load spatial-seq data
-adata_st = sc.read("Spatial-seq/results/SCT.CCA/tangam/sp_2os3.h5ad")
+adata_st = sc.read("Spatial-seq/results/SCT.CCA/4.tangam/sp_2os3.h5ad")
 
 # load snRNA-seq data
-adata_sc = sc.read_h5ad('Spatial-seq/results/SCT.CCA/tangam/snRNA-seq refdata.h5ad')
+adata_sc = sc.read_h5ad('Spatial-seq/results/SCT.CCA/4.tangam/snRNA-seq refdata.h5ad')
 
 # Pre-processing
 sc.tl.rank_genes_groups(adata_sc, groupby="celltype", use_raw=False)
@@ -107,7 +107,7 @@ df_all_genes = tg.compare_spatial_geneexp(ad_ge, adata_st, adata_sc)
 sns.scatterplot(data=df_all_genes, x='score', y='sparsity_sp', hue='is_training', alpha=.5);  
 
 # Image identification of nuclei 
-img = sq.im.ImageContainer('Spatial-seq/results/SCT.CCA/tangam/2OS3_fullres_image.tif')
+img = sq.im.ImageContainer('Spatial-seq/results/SCT.CCA/4.tangam/2OS3_fullres_image.tif')
 
 sq.im.segment(
     img=img,
