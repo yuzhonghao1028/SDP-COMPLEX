@@ -2,7 +2,7 @@
 library(Seurat)
 
 # dir.create
-dir.create("Spatial-seq/results/SCT.CCA/data input & merge", recursive = T)
+dir.create("Spatial-seq/results/SCT.CCA/1.data input & merge", recursive = T)
 
 # Load10X_Spatial (for expr matrix) Function
 Load10X_Spatial_ver2<-function (data.dir, filename = "filtered_feature_bc_matrix", 
@@ -785,7 +785,7 @@ seurat.list <- PrepSCTIntegration(object.list = seurat.list, anchor.features = f
 seurat.obj.anchors <- FindIntegrationAnchors(object.list = seurat.list, normalization.method = "SCT", anchor.features = features)
 seurat.obj.combined <- IntegrateData(anchorset = seurat.obj.anchors, normalization.method = "SCT")
 
-saveRDS(seurat.obj.combined,file = "Spatial-seq/results/SCT.CCA/goat_on spatial-seq sct_cca drop_chiasm.rds")
+saveRDS(seurat.obj.combined,file = "Spatial-seq/results/SCT.CCA/1.data input & merge/goat_on spatial-seq sct_cca drop_chiasm.rds")
 
 
   
