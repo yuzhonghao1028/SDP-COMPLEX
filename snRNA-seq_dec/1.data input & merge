@@ -1,3 +1,5 @@
+setwd("~/r4.3_docker_rstudio/data_analysis/SBC/snRNA-Seq/20240325 published code test")
+
 # load packages
 library(Seurat)
 library(ggplot2)
@@ -5,9 +7,15 @@ library(future)
 library(dplyr)
 
 # snRNA-seq data input 
-surgery <- Read10X("snRNA-seq_dec/Matrix/surgery/filtered_feature_bc_matrix/")
-untreated <- Read10X("snRNA-seq_dec/Matrix/untreated/filtered_feature_bc_matrix/")
-seurat.list<-list(surgery=surgery,untreated=untreated)
+surgery1 <- Read10X("snRNA_seq_dec/Matrix/surgery/A1 decompression ON1/filtered_feature_bc_matrix/")
+surgery2 <- Read10X("snRNA_seq_dec/Matrix/surgery/decompression_HU1OD/filtered_feature_bc_matrix/")
+surgery3 <- Read10X("snRNA_seq_dec/Matrix/surgery/decompression_HU3OD//filtered_feature_bc_matrix/")
+untreated1 <- Read10X("snRNA_seq_dec/Matrix/untreated/A3 injury ON1/filtered_feature_bc_matrix/")
+untreated2 <- Read10X("snRNA_seq_dec/Matrix/untreated/injury_HU1OS/filtered_feature_bc_matrix/")
+untreated3 <- Read10X("snRNA_seq_dec/Matrix/untreated/injury_HU3OS/filtered_feature_bc_matrix/")
+seurat.list<-list(surgery1=surgery1,surgery2=surgery2,surgery3=surgery3,
+                  untreated1=untreated1,untreated2=untreated2,untreated3=untreated3)
+rm(surgery1,surgery2,surgery3,untreated1,untreated2,untreated3);gc()
 
 # crate seurat object
 for (i in 1:length(seurat.list)) {
@@ -19,16 +27,16 @@ for (i in 1:length(seurat.list)) {
 }
 
 # quality control
-dir.create("snRNA-seq_dec/results/QC",recursive = T)
+dir.create("snRNA_seq_dec/results/QC",recursive = T)
 ## QC
 for (i in 1:length(seurat.list)) {
   VlnPlot(seurat.list[[i]], features = c("nFeature_RNA", "nCount_RNA"), ncol = 2,pt.size = 0)
-  ggsave(filename = paste0("results/QC/QC-VlnPlot_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
+  ggsave(filename = paste0("snRNA_seq_dec/results/QC/QC-VlnPlot_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
   a <- seurat.list[[i]]@meta.data
   ggplot(data = a,aes(x = a$nCount_RNA))+geom_density(fill="pink")+xlim(c(0,30000))
-  ggsave(filename = paste0("results/QC/QC-nCount.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
+  ggsave(filename = paste0("snRNA_seq_dec/results/QC/QC-nCount.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
   ggplot(data = a,aes(x = a$nFeature_RNA))+geom_density(fill="pink")+xlim(c(0,10000))
-  ggsave(filename = paste0("results/QC/QC-nFeature.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
+  ggsave(filename = paste0("snRNA_seq_dec/results/QC/QC-nFeature.density_",names(seurat.list)[i],".pdf"),width = 6,height = 4.5)
 }
 
 # filter threshold: Feature_RNA > 300 & nFeature_RNA < quantile(seurat_sample, 0.975)
@@ -36,19 +44,55 @@ for (i in 1:length(seurat.list)) {
 a<-seurat.list[[1]]@meta.data
 cat(names(seurat.list)[1],": Before filter ",nrow(seurat.list[[1]]@meta.data),"cells\n") #Before filter : 9250 cells
 seurat.list[[1]] <- subset(seurat.list[[1]], 
-                   subset = 
-                     nFeature_RNA > 300 & 
-                     nFeature_RNA < quantile(a$nFeature_RNA,0.975))
+                           subset = 
+                             nFeature_RNA > 300 & 
+                             nFeature_RNA < quantile(a$nFeature_RNA,0.975))
 cat(names(seurat.list)[1],": After filter ",nrow(seurat.list[[1]]@meta.data),"cells\n") #Before filter : 9017 cells
 
 ## [2]
 a<-seurat.list[[2]]@meta.data
-cat(names(seurat.list)[2],": Before filter ",nrow(seurat.list[[2]]@meta.data),"cells\n") #Before filter : 11273 cells
+cat(names(seurat.list)[2],": Before filter ",nrow(seurat.list[[2]]@meta.data),"cells\n") #Before filter : 12496 cells
 seurat.list[[2]] <- subset(seurat.list[[2]], 
                            subset = 
                              nFeature_RNA > 300 & 
                              nFeature_RNA < quantile(a$nFeature_RNA,0.975))
-cat(names(seurat.list)[2],": After filter ",nrow(seurat.list[[2]]@meta.data),"cells\n") #Before filter : 10990 cells
+cat(names(seurat.list)[2],": After filter ",nrow(seurat.list[[2]]@meta.data),"cells\n") #Before filter : 12181 cells
+
+## [3]
+a<-seurat.list[[3]]@meta.data
+cat(names(seurat.list)[3],": Before filter ",nrow(seurat.list[[3]]@meta.data),"cells\n") #Before filter : 12726 cells
+seurat.list[[3]] <- subset(seurat.list[[3]], 
+                           subset = 
+                             nFeature_RNA > 300 & 
+                             nFeature_RNA < quantile(a$nFeature_RNA,0.975))
+cat(names(seurat.list)[3],": After filter ",nrow(seurat.list[[3]]@meta.data),"cells\n") #Before filter : 12406 cells
+
+## [4]
+a<-seurat.list[[4]]@meta.data
+cat(names(seurat.list)[4],": Before filter ",nrow(seurat.list[[4]]@meta.data),"cells\n") #Before filter : 11273 cells
+seurat.list[[4]] <- subset(seurat.list[[4]], 
+                           subset = 
+                             nFeature_RNA > 300 & 
+                             nFeature_RNA < quantile(a$nFeature_RNA,0.975))
+cat(names(seurat.list)[4],": After filter ",nrow(seurat.list[[4]]@meta.data),"cells\n") #Before filter : 10990 cells
+
+## [5]
+a<-seurat.list[[5]]@meta.data
+cat(names(seurat.list)[5],": Before filter ",nrow(seurat.list[[5]]@meta.data),"cells\n") #Before filter : 14430 cells
+seurat.list[[5]] <- subset(seurat.list[[5]], 
+                           subset = 
+                             nFeature_RNA > 300 & 
+                             nFeature_RNA < quantile(a$nFeature_RNA,0.975))
+cat(names(seurat.list)[5],": After filter ",nrow(seurat.list[[5]]@meta.data),"cells\n") #Before filter : 14069 cells
+
+## [6]
+a<-seurat.list[[6]]@meta.data
+cat(names(seurat.list)[6],": Before filter ",nrow(seurat.list[[6]]@meta.data),"cells\n") #Before filter : 14159 cells
+seurat.list[[6]] <- subset(seurat.list[[6]], 
+                           subset = 
+                             nFeature_RNA > 300 & 
+                             nFeature_RNA < quantile(a$nFeature_RNA,0.975))
+cat(names(seurat.list)[6],": After filter ",nrow(seurat.list[[6]]@meta.data),"cells\n") #Before filter : 13805 cells
 
 # SCTransform
 seurat.list <- lapply(X = seurat.list, FUN = SCTransform )
@@ -61,10 +105,10 @@ seurat.obj.combined <- IntegrateData(anchorset = seurat.obj.anchors, normalizati
 seurat.obj.combined <- RunPCA(seurat.obj.combined, verbose = FALSE)
 
 # dir.create
-dir.create("snRNA-seq_dec/results/SCT.CCA/data input & merge/",recursive = T)
+dir.create("snRNA_seq_dec/results/SCT.CCA/1.data input & merge/",recursive = T)
 
 # ElbowPlot
-pdf(paste0("snRNA-seq_dec/results/SCT.CCA/data input & merge/PCA-ElbowPlot.pdf"),width = 6,height = 5)
+pdf(paste0("snRNA_seq_dec/results/SCT.CCA/1.data input & merge/PCA-ElbowPlot.pdf"),width = 6,height = 5)
 ElbowPlot(seurat.obj.combined,ndims = 50)
 dev.off()
 
@@ -74,5 +118,16 @@ dim.use <- 1:30
 # UMAP reduction
 seurat.obj.combined <- RunUMAP(seurat.obj.combined, reduction = "pca", dims = dim.use)
 
+# setting group
+seurat.obj.combined <- RenameIdents(seurat.obj.combined,
+                              "surgery1"="surgery",
+                              "surgery2"="surgery",
+                              "surgery3"="surgery",
+                              "untreated1"="untreated",
+                              "untreated2"="untreated",
+                              "untreated3"="untreated")
+seurat.obj.combined$group <- Idents(seurat.obj.combined)
+
 # save RDS file
-saveRDS(seurat.list.combined,file = "snRNA-seq_dec/results/SCT.CCA/data input & merge/goat_ON decoupling snRNA_SCT.CCA.rds")
+saveRDS(seurat.obj.combined,file = "snRNA_seq_dec/results/SCT.CCA/1.data input & merge/goat_ON decoupling snRNA_SCT.CCA.rds")
+
