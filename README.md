@@ -6,4 +6,4 @@ If you use the data or code provided here in your work, please consider citing i
 
 //cite it here later//.
 
-Please direct any questions about this repository to Yikui Zhang (zhang.yikui@wm.edu.cn).
+Please direct any questions about this repository to Yikui Zhang (zhang.yikui@wmu.edu.cn).
